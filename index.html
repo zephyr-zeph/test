@@ -94,6 +94,27 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .editable-text[contenteditable="true"] {
   cursor: text;
 }
+.type-switch {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.type-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.type-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
 </style>
 </head>
 <body>
@@ -263,11 +284,20 @@ function getItemEditableArtist(item) {
   return item.editableArtist ?? item.parsed?.artist ?? '';
 }
 
+function getItemType(item) {
+  return item.manualType ?? item.parsed?.type ?? 'video';
+}
+
+function getSingleType() {
+  return singleMeta ? getItemType(singleMeta) : 'video';
+}
+
 function commitSingleEdit(field, value) {
   if (!singleMeta) return;
   const v = normalizeEditableText(value);
   if (field === 'title') singleMeta.editableTitle = v;
   if (field === 'artist') singleMeta.editableArtist = v;
+  if (field === 'type') singleMeta.manualType = v;
   renderSingleCard(singleMeta);
 }
 
@@ -277,6 +307,7 @@ function commitPlaylistEdit(vid, field, value) {
   const v = normalizeEditableText(value);
   if (field === 'title') item.editableTitle = v;
   if (field === 'artist') item.editableArtist = v;
+  if (field === 'type') item.manualType = v;
   renderPlaylistGrid(playlistItems);
 }
 
@@ -420,19 +451,25 @@ function renderSingleCard(meta) {
   const { vid, title, parsed } = meta;
   const tierlist = isTlSingle();
   const url = thumbUrl(vid, currentQuality);
+  const effectiveType = getSingleType();
 
   const editableTitle = tierlist ? getSingleEditableTitle() : title;
   const editableArtist = tierlist ? getSingleEditableArtist() : '';
-  let mainTitle, artistLine = '', badgeHtml = '';
+  let mainTitle, artistLine = '', badgeHtml = '', typeControls = '';
   if (tierlist) {
     mainTitle = `<div class="vid-title editable-text" contenteditable="true" spellcheck="false" onblur="commitSingleEdit('title', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(editableTitle)}</div>`;
-    if (parsed.type === 'song') {
+    if (effectiveType === 'song') {
       const artistText = escHtml(editableArtist);
       artistLine = `<div class="vid-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitSingleEdit('artist', this.innerText)" onkeydown="stopEditableEnter(event)">${artistText}</div>`;
       badgeHtml = `<span class="type-badge badge-song">♪ Song</span>`;
     } else {
       badgeHtml = `<span class="type-badge badge-video">▶ Video</span>`;
     }
+    typeControls = `
+      <div class="type-switch" aria-label="Tierlist type override">
+        <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitSingleEdit('type','video')">Video</button>
+        <button class="type-btn${effectiveType === 'song' ? ' active' : ''}" onclick="commitSingleEdit('type','song')">Song</button>
+      </div>`;
   } else {
     mainTitle = `<div class="vid-title">${escHtml(title)}</div>`;
   }
@@ -447,6 +484,7 @@ function renderSingleCard(meta) {
           ${mainTitle}
           ${artistLine}
           ${badgeHtml}
+          ${typeControls}
           <div class="vid-size">${qualityLabel(currentQuality)}</div>
         </div>
         <div class="btn-group">
@@ -550,14 +588,21 @@ function renderPlaylistGrid(items) {
     const { vid, title, parsed } = item;
     const card = document.createElement('div');
     card.className = 'grid-thumb' + (tierlist ? ' tl' : '');
+    const effectiveType = getItemType(item);
 
     let mainText = tierlist ? getItemEditableTitle(item) : title;
-    let subText  = (tierlist && parsed.type === 'song') ? getItemEditableArtist(item) : null;
+    let subText  = (tierlist && effectiveType === 'song') ? getItemEditableArtist(item) : null;
     let badge    = '';
+    let typeControls = '';
     if (tierlist) {
-      badge = parsed.type === 'song'
+      badge = effectiveType === 'song'
         ? `<span class="gt-badge badge-song">♪ Song</span>`
         : `<span class="gt-badge badge-video">▶ Video</span>`;
+      typeControls = `
+        <div class="type-switch" aria-label="Tierlist type override">
+          <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitPlaylistEdit('${vid}', 'type', 'video')">Video</button>
+          <button class="type-btn${effectiveType === 'song' ? ' active' : ''}" onclick="commitPlaylistEdit('${vid}', 'type', 'song')">Song</button>
+        </div>`;
     }
 
     card.innerHTML = `
@@ -565,7 +610,8 @@ function renderPlaylistGrid(items) {
            onerror="this.src='${thumbUrl(vid,'hqdefault')}'" />
       <div class="gt-title${tierlist ? ' editable-text' : ''}" ${tierlist ? 'contenteditable="true" spellcheck="false" onblur="commitPlaylistEdit(\'' + vid + '\', \'title\', this.innerText)" onkeydown="stopEditableEnter(event)"' : ''} title="${escHtml(mainText)}">${escHtml(mainText)}</div>
       ${subText !== null ? `<div class="gt-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitPlaylistEdit('${vid}', 'artist', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(subText)}</div>` : ''}
-      ${badge}`;
+      ${badge}
+      ${typeControls}`;
     grid.appendChild(card);
   }
 
@@ -591,7 +637,8 @@ async function renderTierlistBlob(item, quality) {
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       const SIZE    = 400;
-      const LABEL_H = parsed.artist && parsed.type === 'song' ? 72 : 52;
+      const effectiveType = getItemType(item);
+      const LABEL_H = effectiveType === 'song' && (item.editableArtist ?? parsed.artist) ? 72 : 52;
       const canvas  = document.createElement('canvas');
       canvas.width  = SIZE;
       canvas.height = SIZE + LABEL_H;
@@ -616,7 +663,7 @@ async function renderTierlistBlob(item, quality) {
       // Main title
       ctx.textAlign = 'center';
       const mainText = item.editableTitle ?? parsed.displayTitle ?? title;
-      const subText  = parsed.type === 'song' ? (item.editableArtist ?? parsed.artist) : null;
+      const subText  = effectiveType === 'song' ? (item.editableArtist ?? parsed.artist) : null;
       const maxW     = SIZE - 28;
       const midY     = SIZE + (subText ? LABEL_H * 0.38 : LABEL_H * 0.55);
 
