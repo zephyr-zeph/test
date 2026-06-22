@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Thumbnail Downloader</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+  --text: #f1f1f1; --muted: #888; --accent: #ff0000;
+  --accent-dim: rgba(255,0,0,0.12); --radius: 10px; --radius-sm: 6px;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; padding: 2rem 1rem; }
+.container { max-width: 780px; margin: 0 auto; }
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 2.5rem; }
+.logo { width: 42px; height: 42px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.logo svg { width: 22px; height: 22px; fill: white; }
+header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+header p { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+.tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; margin-bottom: 1.5rem; }
+.tab { flex: 1; padding: 9px; border: none; background: transparent; color: var(--muted); font-size: 0.875rem; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
+.tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+.panel { display: none; }
+.panel.active { display: block; }
+.input-group { display: flex; gap: 8px; margin-bottom: 1rem; }
+input[type="text"], input[type="password"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 10px 14px; font-size: 0.875rem; outline: none; transition: border-color 0.15s; width: 100%; }
+input[type="text"]:focus, input[type="password"]:focus { border-color: var(--border2); }
+input::placeholder { color: var(--muted); }
+button.primary { background: var(--accent); border: none; border-radius: var(--radius-sm); color: white; padding: 10px 18px; font-size: 0.875rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
+button.primary:hover { opacity: 0.88; }
+button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.controls-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.quality-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.quality-btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+.quality-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.tierlist-toggle { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.tierlist-toggle span { font-size: 0.82rem; color: var(--muted); user-select: none; }
+.toggle-switch { position: relative; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider { position: absolute; inset: 0; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; transition: 0.2s; }
+.toggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s; }
+.toggle-switch input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); background: var(--accent); }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 1.25rem; }
+.thumb-wrap { position: relative; background: #000; aspect-ratio: 16/9; overflow: hidden; }
+.thumb-wrap.square { aspect-ratio: 1/1; }
+.thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-error { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 0.85rem; padding: 2rem; text-align: center; }
+.card-body { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card-meta { flex: 1; min-width: 0; }
+.card-meta .vid-title { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta .vid-artist { font-size: 0.78rem; color: var(--muted); margin-top: 3px; font-style: italic; }
+.card-meta .vid-size { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+.type-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; margin-top: 5px; }
+.badge-song { background: rgba(99,179,237,0.12); color: #63b3ed; border: 1px solid rgba(99,179,237,0.25); }
+.badge-video { background: rgba(154,205,50,0.1); color: #9acd32; border: 1px solid rgba(154,205,50,0.2); }
+.btn-group { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+button.dl-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); padding: 8px 14px; font-size: 0.82rem; font-weight: 500; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+button.dl-btn:hover { background: #2e2e2e; }
+button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
+.dl-icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.status { font-size: 0.82rem; color: var(--muted); padding: 6px 0; min-height: 22px; }
+.status.error { color: #ff6b6b; }
+.status.success { color: #6bcb77; }
+.api-note { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+.api-note a { color: #4ea8ff; text-decoration: none; }
+.api-note a:hover { text-decoration: underline; }
+.api-key-row { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; }
+.api-key-row label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.playlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 1.25rem; }
+.grid-thumb { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.grid-thumb img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+.grid-thumb.tl img { aspect-ratio: 1/1; }
+.gt-title { padding: 6px 8px 2px; font-size: 0.75rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.gt-artist { padding: 0 8px 4px; font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+.gt-badge { margin: 0 8px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; }
+.batch-bar { display: flex; align-items: center; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
+.progress-wrap { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; height: 6px; overflow: hidden; min-width: 80px; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 20px; width: 0%; transition: width 0.25s; }
+.progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+.tl-note { font-size: 0.76rem; color: var(--muted); margin-top: 5px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+  </div>
+  <div>
+    <h1>YouTube Thumbnail Downloader</h1>
+    <p>Download thumbnails from single videos or entire playlists</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('single')">Single Video</button>
+  <button class="tab" onclick="switchTab('playlist')">Playlist (ZIP)</button>
+</div>
+
+<!-- SINGLE VIDEO -->
+<div class="panel active" id="panel-single">
+  <div class="input-group">
+    <input type="text" id="video-url" placeholder="Paste YouTube video URL or ID…" onkeydown="if(event.key==='Enter')fetchSingle()" />
+    <button class="primary" onclick="fetchSingle()">Fetch</button>
+  </div>
+  <div class="controls-row">
+    <div class="quality-row" id="quality-row">
+      <button class="quality-btn active" data-q="maxresdefault" onclick="setQuality(this)">Max (1280×720)</button>
+      <button class="quality-btn" data-q="sddefault" onclick="setQuality(this)">SD (640×480)</button>
+      <button class="quality-btn" data-q="hqdefault" onclick="setQuality(this)">HQ (480×360)</button>
+      <button class="quality-btn" data-q="mqdefault" onclick="setQuality(this)">MQ (320×180)</button>
+    </div>
+    <div class="tierlist-toggle">
+      <span>Tierlist mode</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="tl-single" onchange="onSingleTlToggle()" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="status" id="single-status"></div>
+  <div id="single-result"></div>
+</div>
+
+<!-- PLAYLIST -->
+<div class="panel" id="panel-playlist">
+  <div class="api-note">
+    Playlist fetching requires a <strong>YouTube Data API v3 key</strong> (free).
+    Get one at <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> →
+    Enable <em>YouTube Data API v3</em> → Create credentials → API key.
+  </div>
+  <div class="api-key-row">
+    <label for="yt-api-key">YT API Key</label>
+    <input type="password" id="yt-api-key" placeholder="AIza…" style="flex:1" />
+  </div>
+  <div class="input-group">
+    <input type="text" id="playlist-url" placeholder="Paste YouTube playlist URL or ID…" onkeydown="if(event.key==='Enter')fetchPlaylist()" />
+    <button class="primary" id="pl-btn" onclick="fetchPlaylist()">Fetch</button>
+  </div>
+  <div class="controls-row">
+    <div class="quality-row" id="pl-quality-row">
+      <button class="quality-btn active" data-q="maxresdefault" onclick="setPlQuality(this)">Max</button>
+      <button class="quality-btn" data-q="sddefault" onclick="setPlQuality(this)">SD</button>
+      <button class="quality-btn" data-q="hqdefault" onclick="setPlQuality(this)">HQ</button>
+      <button class="quality-btn" data-q="mqdefault" onclick="setPlQuality(this)">MQ</button>
+    </div>
+    <div class="tierlist-toggle">
+      <span>Tierlist mode</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="tl-playlist" onchange="onPlTlToggle()" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="status" id="pl-status"></div>
+  <div id="playlist-result"></div>
+  <div id="batch-bar-wrap"></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+/* ─── State ───────────────────────────────────────────────── */
+let currentQuality = 'maxresdefault';
+let plQuality      = 'maxresdefault';
+let playlistItems  = [];
+let singleMeta     = null;
+
+/* ─── Tab switching ───────────────────────────────────────── */
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) =>
+    t.classList.toggle('active', i === (tab === 'single' ? 0 : 1)));
+  document.getElementById('panel-single').classList.toggle('active', tab === 'single');
+  document.getElementById('panel-playlist').classList.toggle('active', tab === 'playlist');
+}
+
+function isTlSingle()   { return document.getElementById('tl-single').checked; }
+function isTlPlaylist() { return document.getElementById('tl-playlist').checked; }
+
+function onSingleTlToggle() { if (singleMeta) renderSingleCard(singleMeta); }
+function onPlTlToggle()     { if (playlistItems.length) renderPlaylistGrid(playlistItems); }
+
+/* ─── Quality selectors ───────────────────────────────────── */
+function setQuality(btn) {
+  document.querySelectorAll('#quality-row .quality-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentQuality = btn.dataset.q;
+  if (singleMeta) renderSingleCard(singleMeta);
+}
+function setPlQuality(btn) {
+  document.querySelectorAll('#pl-quality-row .quality-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  plQuality = btn.dataset.q;
+  if (playlistItems.length) renderPlaylistGrid(playlistItems);
+}
+
+/* ─── URL extractors ──────────────────────────────────────── */
+function extractVideoId(url) {
+  if (!url) return null;
+  for (const p of [/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/, /^([A-Za-z0-9_-]{11})$/]) {
+    const m = url.match(p); if (m) return m[1];
+  }
+  return null;
+}
+function extractPlaylistId(url) {
+  if (!url) return null;
+  const m = url.match(/[?&]list=([A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  return /^[A-Za-z0-9_-]{10,}$/.test(url) ? url : null;
+}
+function thumbUrl(vid, q) { return `https://img.youtube.com/vi/${vid}/${q}.jpg`; }
+
+/* ─── Status helpers ──────────────────────────────────────── */
+function setStatus(id, msg, type = '') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+function qualityLabel(q) {
+  return { maxresdefault:'Max (1280×720)', sddefault:'SD (640×480)', hqdefault:'HQ (480×360)', mqdefault:'MQ (320×180)' }[q] || q;
+}
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PATTERN-BASED TITLE PARSER
+   ═══════════════════════════════════════════════════════════
+
+   Signals that suggest it's a SONG:
+   • Channel name ends with " - Topic"  (YouTube auto-generated)
+   • Title matches "Artist - Song" dash pattern
+   • Title contains music keywords: (Official Video), (Lyric Video),
+     (Official Audio), (Music Video), (Official MV), (Visualizer),
+     [Official Video], MV, M/V, (prod. ...), ft., feat.
+   • Title ends with common music suffixes
+
+   If identified as a song we:
+   1. Try to split on " - " to get artist / song
+   2. Strip suffix noise from the song name
+   3. Clean up featured artists from song name into artist string
+*/
+
+const MUSIC_SUFFIX_RE = /[\s[(]+(?:official\s*(?:music\s*)?video|official\s*audio|official\s*mv|lyric(?:s)?\s*video|lyrics?|audio|visualizer|music\s*video|animated\s*video|full\s*video|hd|4k|mv|m\/v|performance\s*video|live\s*version|live\s*session|acoustic\s*version|cover\s*video|piano\s*version|guitar\s*cover|radio\s*edit|extended\s*mix|club\s*mix|remix(?:\s*video)?|slowed(?:\s*[\+&]\s*reverb)?|nightcore|sped\s*up|bass\s*boosted|explicit|clean|version|ver\.?|with\s*lyrics?|w\/\s*lyrics?|out\s*now|available\s*now|\d{4})[^\w]*/gi;
+
+const FEAT_RE = /\s*[\[(]?\s*(?:ft\.?|feat\.?|featuring|with)\s+([^\])]+?)[\])]?\s*$/i;
+const PROD_RE = /\s*[\[(]\s*prod\.?\s*(?:by\s*)?[^\])]+[\])]/gi;
+const EXTRA_PARENS_RE = /\s*[\[(][^\])]{0,40}[\])]\s*$/g;
+
+function isMusicChannel(channel) {
+  return channel && / - Topic$/i.test(channel);
+}
+
+function hasMusicKeywords(title) {
+  return /\b(?:official\s+(?:music\s+)?video|official\s+audio|lyric(?:s)?\s+video|lyrics?|visualizer|music\s+video|official\s+mv|m\/v\b|mv\b)/i.test(title)
+    || /[\[(](?:ft\.?|feat\.?|featuring|prod\.)/i.test(title)
+    || /\s(?:ft\.?|feat\.?)\s/i.test(title);
+}
+
+function cleanSongName(raw) {
+  let s = raw.trim();
+  s = s.replace(PROD_RE, '');
+  s = s.replace(FEAT_RE, '');
+  s = s.replace(MUSIC_SUFFIX_RE, '');
+  s = s.replace(/\s*[\[(][^\])]{0,50}[\])]\s*$/g, '');
+  s = s.replace(/[:\-–—|]+\s*$/, '').trim();
+  return s || raw.trim();
+}
+
+function cleanArtistName(raw) {
+  return raw.replace(/ - Topic$/i, '').trim();
+}
+
+function parseFeatFromTitle(title) {
+  const m = title.match(/\s*[\[(]?\s*(?:ft\.?|feat\.?|featuring|with)\s+([^\])[,]+?)[\])]?\s*(?:$|[\[(])/i);
+  return m ? m[1].trim() : null;
+}
+
+function parseTitle(title, channel) {
+  // ── Detect if it's a song ────────────────────────────────
+  const isTopicChannel = isMusicChannel(channel);
+  const hasKeywords    = hasMusicKeywords(title);
+  const dashMatch      = title.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+  const looksLikeSong  = isTopicChannel || hasKeywords || (dashMatch && hasKeywords);
+
+  if (!looksLikeSong) {
+    return { type: 'video', displayTitle: title, artist: null };
+  }
+
+  // ── Extract artist & song name ───────────────────────────
+  let artist = null;
+  let songName = title;
+
+  if (isTopicChannel && !dashMatch) {
+    // Topic channel, no dash: whole title is the song name, channel is artist
+    artist   = cleanArtistName(channel);
+    songName = cleanSongName(title);
+  } else if (dashMatch) {
+    // "Artist - Song Title (Official Video)" pattern
+    let rawArtist = dashMatch[1].trim();
+    let rawSong   = dashMatch[2].trim();
+
+    // Sometimes the pattern is reversed for non-English content — heuristic:
+    // the shorter side without suffix noise is likely the artist
+    const cleanedRight = cleanSongName(rawSong);
+    const cleanedLeft  = cleanSongName(rawArtist);
+
+    artist   = cleanedLeft;
+    songName = cleanedRight;
+
+    // Pull featured artists from the raw song segment and append to artist
+    const feat = parseFeatFromTitle(rawSong) || parseFeatFromTitle(rawArtist);
+    if (feat) artist += ` ft. ${feat}`;
+  } else {
+    // Has music keywords but no dash — just strip suffixes from title
+    if (channel) artist = cleanArtistName(channel);
+    songName = cleanSongName(title);
+  }
+
+  return {
+    type: 'song',
+    displayTitle: songName || title,
+    artist: artist || null
+  };
+}
+
+/* ─── oEmbed fetch (free, no API key) ────────────────────── */
+async function fetchOEmbed(vid) {
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    return { title: d.title, channel: d.author_name };
+  } catch { return null; }
+}
+
+/* ─── Single video ────────────────────────────────────────── */
+async function fetchSingle() {
+  const raw = document.getElementById('video-url').value.trim();
+  const vid = extractVideoId(raw);
+  if (!vid) {
+    setStatus('single-status', 'Could not find a valid video ID in that URL.', 'error');
+    document.getElementById('single-result').innerHTML = '';
+    return;
+  }
+  setStatus('single-status', 'Loading…');
+  const oEmbed = await fetchOEmbed(vid);
+  const title   = oEmbed?.title   || `Video ${vid}`;
+  const channel = oEmbed?.channel || null;
+  singleMeta = { vid, title, channel, parsed: parseTitle(title, channel) };
+  setStatus('single-status', '');
+  renderSingleCard(singleMeta);
+}
+
+function renderSingleCard(meta) {
+  const { vid, title, parsed } = meta;
+  const tierlist = isTlSingle();
+  const url = thumbUrl(vid, currentQuality);
+
+  let mainTitle, artistLine = '', badgeHtml = '';
+  if (tierlist) {
+    mainTitle = escHtml(parsed.displayTitle);
+    if (parsed.type === 'song') {
+      if (parsed.artist) artistLine = `<div class="vid-artist">${escHtml(parsed.artist)}</div>`;
+      badgeHtml = `<span class="type-badge badge-song">♪ Song</span>`;
+    } else {
+      badgeHtml = `<span class="type-badge badge-video">▶ Video</span>`;
+    }
+  } else {
+    mainTitle = escHtml(title);
+  }
+
+  document.getElementById('single-result').innerHTML = `
+    <div class="result-card">
+      <div class="thumb-wrap${tierlist ? ' square' : ''}">
+        <img id="thumb-img" src="${url}" alt="Thumbnail" onerror="handleThumbError('${vid}')" />
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <div class="vid-title">${mainTitle}</div>
+          ${artistLine}
+          ${badgeHtml}
+          <div class="vid-size">${qualityLabel(currentQuality)}</div>
+        </div>
+        <div class="btn-group">
+          <button class="dl-btn" onclick="downloadSingle('${vid}','${currentQuality}')">
+            <svg class="dl-icon" viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29"/></svg>
+            Download
+          </button>
+          ${tierlist ? `<button class="dl-btn sm" onclick="downloadTierlistCard()">
+            <svg class="dl-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+            Tierlist card
+          </button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function handleThumbError(vid) {
+  const img = document.getElementById('thumb-img');
+  if (!img) return;
+  const fallbacks = ['sddefault','hqdefault','mqdefault','default'];
+  const tried = img.dataset.tried ? img.dataset.tried.split(',') : [];
+  const next = fallbacks.find(q => !tried.includes(q) && q !== currentQuality);
+  if (next) { tried.push(next); img.dataset.tried = tried.join(','); img.src = thumbUrl(img.closest('.result-card') ? singleMeta?.vid : '', next); }
+  else img.parentElement.innerHTML = `<div class="thumb-error">Thumbnail not found.</div>`;
+}
+
+async function downloadSingle(vid, quality) {
+  const url = thumbUrl(vid, quality);
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    triggerDownload(URL.createObjectURL(blob), `thumbnail_${vid}_${quality}.jpg`);
+  } catch {
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.click();
+  }
+}
+
+async function downloadTierlistCard() {
+  if (!singleMeta) return;
+  const blob = await renderTierlistBlob(singleMeta, currentQuality);
+  if (blob) {
+    const name = (singleMeta.parsed.displayTitle || singleMeta.title).replace(/[\\/:*?"<>|]/g,'_').substring(0,60);
+    triggerDownload(URL.createObjectURL(blob), `${name}_${singleMeta.vid}.png`);
+  }
+}
+
+function triggerDownload(href, filename) {
+  const a = document.createElement('a');
+  a.href = href; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(href), 5000);
+}
+
+/* ─── Playlist ────────────────────────────────────────────── */
+async function fetchPlaylist() {
+  const apiKey = document.getElementById('yt-api-key').value.trim();
+  const raw    = document.getElementById('playlist-url').value.trim();
+  const plId   = extractPlaylistId(raw);
+  if (!apiKey) { setStatus('pl-status','Please enter your YouTube API key.','error'); return; }
+  if (!plId)   { setStatus('pl-status','Could not find a valid playlist ID.','error'); return; }
+
+  document.getElementById('pl-btn').disabled = true;
+  document.getElementById('playlist-result').innerHTML = '';
+  document.getElementById('batch-bar-wrap').innerHTML = '';
+  playlistItems = [];
+  setStatus('pl-status','Fetching playlist…');
+
+  try {
+    let nextPage = '';
+    do {
+      const res  = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${plId}&key=${apiKey}${nextPage?'&pageToken='+nextPage:''}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      for (const item of data.items) {
+        const s   = item.snippet;
+        const vid = s.resourceId?.videoId;
+        if (!vid) continue;
+        const title   = s.title;
+        const channel = s.videoOwnerChannelTitle || null;
+        playlistItems.push({ vid, title, channel, parsed: parseTitle(title, channel) });
+      }
+      nextPage = data.nextPageToken || '';
+      setStatus('pl-status', `Found ${playlistItems.length} videos…`);
+    } while (nextPage);
+
+    setStatus('pl-status', `${playlistItems.length} videos found.`, 'success');
+    renderPlaylistGrid(playlistItems);
+  } catch (e) {
+    setStatus('pl-status', 'Error: ' + e.message, 'error');
+  } finally {
+    document.getElementById('pl-btn').disabled = false;
+  }
+}
+
+function renderPlaylistGrid(items) {
+  const tierlist = isTlPlaylist();
+  const grid = document.createElement('div');
+  grid.className = 'playlist-grid';
+
+  for (const item of items) {
+    const { vid, title, parsed } = item;
+    const card = document.createElement('div');
+    card.className = 'grid-thumb' + (tierlist ? ' tl' : '');
+
+    let mainText = tierlist ? parsed.displayTitle : title;
+    let subText  = (tierlist && parsed.type === 'song') ? parsed.artist : null;
+    let badge    = '';
+    if (tierlist) {
+      badge = parsed.type === 'song'
+        ? `<span class="gt-badge badge-song">♪ Song</span>`
+        : `<span class="gt-badge badge-video">▶ Video</span>`;
+    }
+
+    card.innerHTML = `
+      <img src="${thumbUrl(vid, plQuality)}" alt="${escHtml(title)}"
+           onerror="this.src='${thumbUrl(vid,'hqdefault')}'" />
+      <div class="gt-title" title="${escHtml(mainText)}">${escHtml(mainText)}</div>
+      ${subText ? `<div class="gt-artist">${escHtml(subText)}</div>` : ''}
+      ${badge}`;
+    grid.appendChild(card);
+  }
+
+  const result = document.getElementById('playlist-result');
+  result.innerHTML = '';
+  result.appendChild(grid);
+
+  document.getElementById('batch-bar-wrap').innerHTML = `
+    <div class="batch-bar">
+      <button class="primary" onclick="downloadZip()">Download All as ZIP</button>
+      <div class="progress-wrap"><div class="progress-bar" id="prog-bar"></div></div>
+      <span class="progress-label" id="prog-label">${items.length} thumbnails</span>
+    </div>
+    ${tierlist ? '<div class="tl-note">ZIP will contain square tierlist cards (.png) with labels baked in.</div>' : ''}`;
+}
+
+/* ─── Canvas: render tierlist card ───────────────────────── */
+async function renderTierlistBlob(item, quality) {
+  const { vid, title, parsed } = item;
+  const url = thumbUrl(vid, quality || plQuality);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const SIZE    = 400;
+      const LABEL_H = parsed.artist && parsed.type === 'song' ? 72 : 52;
+      const canvas  = document.createElement('canvas');
+      canvas.width  = SIZE;
+      canvas.height = SIZE + LABEL_H;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, SIZE, SIZE + LABEL_H);
+
+      // Square-crop the thumbnail (center crop)
+      const side = Math.min(img.width, img.height);
+      const sx   = (img.width  - side) / 2;
+      const sy   = (img.height - side) / 2;
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+
+      // Label bar
+      ctx.fillStyle = '#161616';
+      ctx.fillRect(0, SIZE, SIZE, LABEL_H);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(0, SIZE, SIZE, 1);
+
+      // Main title
+      ctx.textAlign = 'center';
+      const mainText = parsed.displayTitle || title;
+      const subText  = parsed.type === 'song' ? parsed.artist : null;
+      const maxW     = SIZE - 28;
+      const midY     = SIZE + (subText ? LABEL_H * 0.38 : LABEL_H * 0.55);
+
+      ctx.font      = `600 15px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = '#f1f1f1';
+      ctx.fillText(truncateCanvas(ctx, mainText, maxW), SIZE / 2, midY);
+
+      // Artist subtext
+      if (subText) {
+        ctx.font      = `13px "Segoe UI", system-ui, sans-serif`;
+        ctx.fillStyle = '#888';
+        ctx.fillText(truncateCanvas(ctx, subText, maxW), SIZE / 2, SIZE + LABEL_H * 0.72);
+      }
+
+      canvas.toBlob(resolve, 'image/png');
+    };
+    img.onerror = () => {
+      // fallback to hqdefault
+      if (!img.dataset.retry) {
+        img.dataset.retry = '1';
+        img.src = thumbUrl(vid, 'hqdefault');
+      } else resolve(null);
+    };
+    img.src = url;
+  });
+}
+
+function truncateCanvas(ctx, text, maxWidth) {
+  if (!text) return '';
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + '…').width > maxWidth) t = t.slice(0, -1);
+  return t + '…';
+}
+
+/* ─── ZIP download ────────────────────────────────────────── */
+async function downloadZip() {
+  if (!playlistItems.length) return;
+  const tierlist = isTlPlaylist();
+  const zip      = new JSZip();
+  const folder   = zip.folder('thumbnails');
+  let done = 0;
+  const bar   = document.getElementById('prog-bar');
+  const label = document.getElementById('prog-label');
+
+  for (const item of playlistItems) {
+    let blob = null;
+    if (tierlist) {
+      blob = await renderTierlistBlob(item, plQuality);
+    } else {
+      for (const q of [...new Set([plQuality,'sddefault','hqdefault','mqdefault'])]) {
+        try { const r = await fetch(thumbUrl(item.vid, q)); if (r.ok) { blob = await r.blob(); break; } } catch {}
+      }
+    }
+    const safeName = (item.parsed.displayTitle || item.title)
+      .replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g,' ').trim().substring(0, 70);
+    if (blob) folder.file(`${safeName}_${item.vid}.${tierlist ? 'png' : 'jpg'}`, blob);
+    done++;
+    bar.style.width   = Math.round(done / playlistItems.length * 100) + '%';
+    label.textContent = `${done} / ${playlistItems.length}`;
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  triggerDownload(URL.createObjectURL(zipBlob), 'thumbnails.zip');
+  label.textContent = 'Done!';
+}
+</script>
+</body>
+</html>
