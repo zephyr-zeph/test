@@ -94,6 +94,8 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .gt-badge { margin: 0 8px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; }
 .gt-remove { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
 .gt-remove:hover { background: rgba(255,0,0,0.85); }
+.qual-select { display: block; margin: 0 8px 8px; width: calc(100% - 16px); background: var(--surface2); border: 1px solid var(--border2); border-radius: 999px; color: var(--text); font-size: 0.68rem; padding: 4px 8px; cursor: pointer; outline: none; }
+.qual-select:focus { border-color: var(--accent); }
 
 .batch-bar { display: flex; align-items: center; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
 .progress-wrap { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; height: 6px; overflow: hidden; min-width: 80px; }
@@ -298,6 +300,16 @@ function commitBatchEdit(vid, field, value) {
   if (field === 'title') item.editableTitle = v;
   if (field === 'artist') item.editableArtist = v;
   if (field === 'type') item.manualType = v;
+  renderBatchGrid(batchItems);
+}
+
+function getItemQuality(item) {
+  return item?.qualityOverride || plQuality;
+}
+function setItemQuality(vid, q) {
+  const item = batchItems.find(x => x.vid === vid);
+  if (!item) return;
+  item.qualityOverride = q === 'auto' ? null : q;
   renderBatchGrid(batchItems);
 }
 
@@ -607,6 +619,15 @@ async function importPlaylist() {
   }
 }
 
+function handleGridThumbError(img, vid) {
+  const fallbacks = ['sddefault', 'hqdefault', 'mqdefault', 'default'];
+  const item = batchItems.find(x => x.vid === vid);
+  const startQ = item ? getItemQuality(item) : plQuality;
+  const tried = img.dataset.tried ? img.dataset.tried.split(',') : [];
+  const next = fallbacks.find(q => !tried.includes(q) && q !== startQ);
+  if (next) { tried.push(next); img.dataset.tried = tried.join(','); img.src = thumbUrl(vid, next); }
+}
+
 function clearBatch() {
   batchItems = [];
   renderBatchGrid(batchItems);
@@ -648,14 +669,25 @@ function renderBatchGrid(items) {
         </div>`;
     }
 
+    const itemQuality = getItemQuality(item);
+    const qualitySelect = `
+      <select class="qual-select" title="Thumbnail quality for this video" onchange="setItemQuality('${vid}', this.value)">
+        <option value="auto" ${!item.qualityOverride ? 'selected' : ''}>Auto (${qualityLabel(plQuality).split(' ')[0]})</option>
+        <option value="maxresdefault" ${item.qualityOverride === 'maxresdefault' ? 'selected' : ''}>Max</option>
+        <option value="sddefault" ${item.qualityOverride === 'sddefault' ? 'selected' : ''}>SD</option>
+        <option value="hqdefault" ${item.qualityOverride === 'hqdefault' ? 'selected' : ''}>HQ</option>
+        <option value="mqdefault" ${item.qualityOverride === 'mqdefault' ? 'selected' : ''}>MQ</option>
+      </select>`;
+
     card.innerHTML = `
       <button class="gt-remove" title="Remove from batch" onclick="removeFromBatch('${vid}')">×</button>
-      <img src="${thumbUrl(vid, plQuality)}" alt="${escHtml(title)}"
-           onerror="this.src='${thumbUrl(vid,'hqdefault')}'" />
+      <img src="${thumbUrl(vid, itemQuality)}" alt="${escHtml(title)}"
+           onerror="handleGridThumbError(this, '${vid}')" />
       <div class="gt-title${tierlist ? ' editable-text' : ''}" ${tierlist ? 'contenteditable="true" spellcheck="false" onblur="commitBatchEdit(\'' + vid + '\', \'title\', this.innerText)" onkeydown="stopEditableEnter(event)"' : ''} title="${escHtml(mainText)}">${escHtml(mainText)}</div>
       ${subText !== null ? `<div class="gt-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitBatchEdit('${vid}', 'artist', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(subText)}</div>` : ''}
       ${badge}
-      ${typeControls}`;
+      ${typeControls}
+      ${qualitySelect}`;
     grid.appendChild(card);
   }
 
@@ -801,11 +833,12 @@ async function downloadZip() {
   const label = document.getElementById('prog-label');
 
   for (const item of batchItems) {
+    const itemQuality = getItemQuality(item);
     let blob = null;
     if (tierlist) {
-      blob = await renderTierlistBlob(item, plQuality);
+      blob = await renderTierlistBlob(item, itemQuality);
     } else {
-      for (const q of [...new Set([plQuality,'sddefault','hqdefault','mqdefault'])]) {
+      for (const q of [...new Set([itemQuality,'sddefault','hqdefault','mqdefault'])]) {
         try { const r = await fetch(thumbUrl(item.vid, q)); if (r.ok) { blob = await r.blob(); break; } } catch {}
       }
     }
