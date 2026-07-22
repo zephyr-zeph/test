@@ -10,31 +10,43 @@
 :root {
   --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424;
   --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
-  --text: #f1f1f1; --muted: #888; --accent: #ff0000;
-  --accent-dim: rgba(255,0,0,0.12); --radius: 10px; --radius-sm: 6px;
+  --text: #f1f1f1; --muted: #8a8a8a; --accent: #ff0000;
+  --accent-dim: rgba(255,0,0,0.12); --radius: 12px; --radius-sm: 8px;
 }
-body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; padding: 2rem 1rem; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; padding: 2.5rem 1rem; line-height: 1.4; }
 .container { max-width: 780px; margin: 0 auto; }
-header { display: flex; align-items: center; gap: 14px; margin-bottom: 2.5rem; }
-.logo { width: 42px; height: 42px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 2.25rem; }
+.logo { width: 42px; height: 42px; background: var(--accent); border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(255,0,0,0.25); flex-shrink: 0; }
 .logo svg { width: 22px; height: 22px; fill: white; }
-header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
 header p { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+
 .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; margin-bottom: 1.5rem; }
-.tab { flex: 1; padding: 9px; border: none; background: transparent; color: var(--muted); font-size: 0.875rem; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
+.tab { flex: 1; padding: 10px; border: none; background: transparent; color: var(--muted); font-size: 0.875rem; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
+.tab:hover:not(.active) { color: var(--text); }
 .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
 .panel { display: none; }
 .panel.active { display: block; }
-.input-group { display: flex; gap: 8px; margin-bottom: 1rem; }
-input[type="text"], input[type="password"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 10px 14px; font-size: 0.875rem; outline: none; transition: border-color 0.15s; width: 100%; }
-input[type="text"]:focus, input[type="password"]:focus { border-color: var(--border2); }
+
+.section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 1.25rem 0 0.6rem; }
+.section-label:first-child { margin-top: 0; }
+
+.input-group { display: flex; gap: 8px; margin-bottom: 0.5rem; }
+input[type="text"], input[type="password"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 11px 14px; font-size: 0.875rem; outline: none; transition: border-color 0.15s; width: 100%; }
+input[type="text"]:focus, input[type="password"]:focus { border-color: var(--accent); }
 input::placeholder { color: var(--muted); }
-button.primary { background: var(--accent); border: none; border-radius: var(--radius-sm); color: white; padding: 10px 18px; font-size: 0.875rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
+
+button.primary { background: var(--accent); border: none; border-radius: var(--radius-sm); color: white; padding: 11px 18px; font-size: 0.875rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.15s, transform 0.1s; }
 button.primary:hover { opacity: 0.88; }
+button.primary:active { transform: scale(0.98); }
 button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+button.secondary { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); padding: 10px 16px; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+button.secondary:hover { background: var(--surface2); }
+
 .controls-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
 .quality-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .quality-btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+.quality-btn:hover { border-color: var(--border2); }
 .quality-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 .tierlist-toggle { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .tierlist-toggle span { font-size: 0.82rem; color: var(--muted); user-select: none; }
@@ -44,6 +56,7 @@ button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .toggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s; }
 .toggle-switch input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); background: var(--accent); }
+
 .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 1.25rem; }
 .thumb-wrap { position: relative; background: #000; aspect-ratio: 16/9; overflow: hidden; }
 .thumb-wrap.square { aspect-ratio: 1/1; }
@@ -51,7 +64,7 @@ button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .thumb-error { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 0.85rem; padding: 2rem; text-align: center; }
 .card-body { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .card-meta { flex: 1; min-width: 0; }
-.card-meta .vid-title { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta .vid-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-meta .vid-artist { font-size: 0.78rem; color: var(--muted); margin-top: 3px; font-style: italic; }
 .card-meta .vid-size { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
 .type-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; margin-top: 5px; }
@@ -62,59 +75,39 @@ button.dl-btn { background: var(--surface2); border: 1px solid var(--border2); b
 button.dl-btn:hover { background: #2e2e2e; }
 button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .dl-icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
 .status { font-size: 0.82rem; color: var(--muted); padding: 6px 0; min-height: 22px; }
 .status.error { color: #ff6b6b; }
 .status.success { color: #6bcb77; }
+
 .api-note { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
 .api-note a { color: #4ea8ff; text-decoration: none; }
 .api-note a:hover { text-decoration: underline; }
-.api-key-row { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; }
-.api-key-row label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.api-key-row { display: flex; gap: 8px; margin-bottom: 0.85rem; align-items: center; }
+
 .playlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 1.25rem; }
-.grid-thumb { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.grid-thumb { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
 .grid-thumb img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
 .grid-thumb.tl img { aspect-ratio: 1/1; }
-.gt-title { padding: 6px 8px 2px; font-size: 0.75rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.gt-title { padding: 6px 8px 2px; font-size: 0.75rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .gt-artist { padding: 0 8px 4px; font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
 .gt-badge { margin: 0 8px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; }
+.gt-remove { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.gt-remove:hover { background: rgba(255,0,0,0.85); }
+
 .batch-bar { display: flex; align-items: center; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
 .progress-wrap { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; height: 6px; overflow: hidden; min-width: 80px; }
 .progress-bar { height: 100%; background: var(--accent); border-radius: 20px; width: 0%; transition: width 0.25s; }
 .progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
 .tl-note { font-size: 0.76rem; color: var(--muted); margin-top: 5px; }
-.editable-text {
-  outline: none;
-  border-radius: 4px;
-  padding: 0 2px;
-}
-.editable-text:focus {
-  background: rgba(255,255,255,0.04);
-  box-shadow: inset 0 0 0 1px var(--border2);
-}
-.editable-text[contenteditable="true"] {
-  cursor: text;
-}
-.type-switch {
-  display: inline-flex;
-  gap: 4px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-}
-.type-btn {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.type-btn.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
+
+.editable-text { outline: none; border-radius: 4px; padding: 0 2px; }
+.editable-text:focus { background: rgba(255,255,255,0.04); box-shadow: inset 0 0 0 1px var(--border2); }
+.editable-text[contenteditable="true"] { cursor: text; }
+
+.type-switch { display: inline-flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.type-btn { border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; transition: all 0.15s; }
+.type-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 </style>
 </head>
 <body>
@@ -126,13 +119,13 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
   </div>
   <div>
     <h1>YouTube Thumbnail Downloader</h1>
-    <p>Download thumbnails from single videos or entire playlists</p>
+    <p>Download thumbnails from single videos or a custom batch</p>
   </div>
 </header>
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('single')">Single Video</button>
-  <button class="tab" onclick="switchTab('playlist')">Playlist (ZIP)</button>
+  <button class="tab" onclick="switchTab('batch')">Batch (ZIP)</button>
 </div>
 
 <!-- SINGLE VIDEO -->
@@ -160,21 +153,30 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
   <div id="single-result"></div>
 </div>
 
-<!-- PLAYLIST -->
-<div class="panel" id="panel-playlist">
+<!-- BATCH -->
+<div class="panel" id="panel-batch">
   <div class="api-note">
-    Playlist fetching requires a <strong>YouTube Data API v3 key</strong> (free).
-    Get one at <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> →
-    Enable <em>YouTube Data API v3</em> → Create credentials → API key.
+    Add videos one at a time — no key required — or import a whole playlist at once with a
+    <strong>YouTube Data API v3 key</strong> (free). Get one at
+    <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> →
+    Enable <em>YouTube Data API v3</em> → Create credentials → API key. Everything you add lands in the same batch below.
   </div>
+
+  <div class="section-label">Add a single video</div>
+  <div class="input-group">
+    <input type="text" id="batch-add-url" placeholder="Paste YouTube video URL or ID…" onkeydown="if(event.key==='Enter')addVideoToBatch()" />
+    <button class="primary" onclick="addVideoToBatch()">Add</button>
+  </div>
+
+  <div class="section-label">Import a playlist</div>
   <div class="api-key-row">
-    <label for="yt-api-key">YT API Key</label>
-    <input type="password" id="yt-api-key" placeholder="AIza…" style="flex:1" />
+    <input type="password" id="yt-api-key" placeholder="YT API key (AIza…)" style="flex:1" />
   </div>
   <div class="input-group">
-    <input type="text" id="playlist-url" placeholder="Paste YouTube playlist URL or ID…" onkeydown="if(event.key==='Enter')fetchPlaylist()" />
-    <button class="primary" id="pl-btn" onclick="fetchPlaylist()">Fetch</button>
+    <input type="text" id="playlist-url" placeholder="Paste YouTube playlist URL or ID…" onkeydown="if(event.key==='Enter')importPlaylist()" />
+    <button class="primary" id="pl-btn" onclick="importPlaylist()">Import</button>
   </div>
+
   <div class="controls-row">
     <div class="quality-row" id="pl-quality-row">
       <button class="quality-btn active" data-q="maxresdefault" onclick="setPlQuality(this)">Max</button>
@@ -200,8 +202,8 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 <script>
 /* ─── State ───────────────────────────────────────────────── */
 let currentQuality = 'maxresdefault';
-let plQuality      = 'maxresdefault';
-let playlistItems  = [];
+let plQuality      = 'maxresdefault';   // batch quality
+let batchItems     = [];
 let singleMeta     = null;
 
 /* ─── Tab switching ───────────────────────────────────────── */
@@ -209,14 +211,14 @@ function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) =>
     t.classList.toggle('active', i === (tab === 'single' ? 0 : 1)));
   document.getElementById('panel-single').classList.toggle('active', tab === 'single');
-  document.getElementById('panel-playlist').classList.toggle('active', tab === 'playlist');
+  document.getElementById('panel-batch').classList.toggle('active', tab === 'batch');
 }
 
 function isTlSingle()   { return document.getElementById('tl-single').checked; }
 function isTlPlaylist() { return document.getElementById('tl-playlist').checked; }
 
 function onSingleTlToggle() { if (singleMeta) renderSingleCard(singleMeta); }
-function onPlTlToggle()     { if (playlistItems.length) renderPlaylistGrid(playlistItems); }
+function onPlTlToggle()     { if (batchItems.length) renderBatchGrid(batchItems); }
 
 /* ─── Quality selectors ───────────────────────────────────── */
 function setQuality(btn) {
@@ -229,7 +231,7 @@ function setPlQuality(btn) {
   document.querySelectorAll('#pl-quality-row .quality-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   plQuality = btn.dataset.q;
-  if (playlistItems.length) renderPlaylistGrid(playlistItems);
+  if (batchItems.length) renderBatchGrid(batchItems);
 }
 
 /* ─── URL extractors ──────────────────────────────────────── */
@@ -266,31 +268,19 @@ function normalizeEditableText(text) {
   return (text || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function getSingleEditableTitle() {
-  if (!singleMeta) return '';
-  return singleMeta.editableTitle ?? singleMeta.parsed?.displayTitle ?? singleMeta.title ?? '';
-}
-
-function getSingleEditableArtist() {
-  if (!singleMeta) return '';
-  return singleMeta.editableArtist ?? singleMeta.parsed?.artist ?? '';
-}
-
+/* These accessors work for both singleMeta and items inside batchItems,
+   since both share the same { title, channel, parsed, editableTitle,
+   editableArtist, manualType, vid } shape. */
 function getItemEditableTitle(item) {
-  return item.editableTitle ?? item.parsed?.displayTitle ?? item.title ?? '';
+  return item?.editableTitle ?? item?.parsed?.displayTitle ?? item?.title ?? '';
 }
-
 function getItemEditableArtist(item) {
-  return item.editableArtist ?? item.parsed?.artist ?? '';
+  return item?.editableArtist ?? item?.parsed?.artist ?? '';
 }
-
 function getItemType(item) {
-  return item.manualType ?? item.parsed?.type ?? 'video';
+  return item?.manualType ?? item?.parsed?.type ?? 'video';
 }
-
-function getSingleType() {
-  return singleMeta ? getItemType(singleMeta) : 'video';
-}
+function getSingleType() { return getItemType(singleMeta); }
 
 function commitSingleEdit(field, value) {
   if (!singleMeta) return;
@@ -301,14 +291,20 @@ function commitSingleEdit(field, value) {
   renderSingleCard(singleMeta);
 }
 
-function commitPlaylistEdit(vid, field, value) {
-  const item = playlistItems.find(x => x.vid === vid);
+function commitBatchEdit(vid, field, value) {
+  const item = batchItems.find(x => x.vid === vid);
   if (!item) return;
   const v = normalizeEditableText(value);
   if (field === 'title') item.editableTitle = v;
   if (field === 'artist') item.editableArtist = v;
   if (field === 'type') item.manualType = v;
-  renderPlaylistGrid(playlistItems);
+  renderBatchGrid(batchItems);
+}
+
+function removeFromBatch(vid) {
+  batchItems = batchItems.filter(x => x.vid !== vid);
+  renderBatchGrid(batchItems);
+  setStatus('pl-status', `${batchItems.length} video${batchItems.length === 1 ? '' : 's'} in batch.`);
 }
 
 function stopEditableEnter(e) {
@@ -316,6 +312,23 @@ function stopEditableEnter(e) {
     e.preventDefault();
     e.currentTarget.blur();
   }
+}
+
+/* ─── Filename helpers ───────────────────────────────────────
+   Filenames reflect whatever is currently shown/edited for the item
+   (the tierlist title/artist when tierlist mode is on) so downloaded
+   files are easy to match back to their tierlist card. */
+function sanitizeFilename(s) {
+  return (s || '').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
+}
+function filenameBase(item, tierlist) {
+  if (!item) return 'thumbnail';
+  const title  = tierlist ? getItemEditableTitle(item) : (item.title || getItemEditableTitle(item));
+  const type   = tierlist ? getItemType(item) : (item.parsed?.type || 'video');
+  const artist = tierlist && type === 'song' ? getItemEditableArtist(item) : null;
+  let base = artist ? `${artist} - ${title}` : title;
+  base = sanitizeFilename(base).substring(0, 90);
+  return base || item.vid;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -340,7 +353,6 @@ const MUSIC_SUFFIX_RE = /[\s[(]+(?:official\s*(?:music\s*)?video|official\s*audi
 
 const FEAT_RE = /\s*[\[(]?\s*(?:ft\.?|feat\.?|featuring|with)\s+([^\])]+?)[\])]?\s*$/i;
 const PROD_RE = /\s*[\[(]\s*prod\.?\s*(?:by\s*)?[^\])]+[\])]/gi;
-const EXTRA_PARENS_RE = /\s*[\[(][^\])]{0,40}[\])]\s*$/g;
 
 function isMusicChannel(channel) {
   return channel && / - Topic$/i.test(channel);
@@ -372,7 +384,6 @@ function parseFeatFromTitle(title) {
 }
 
 function parseTitle(title, channel) {
-  // ── Detect if it's a song ────────────────────────────────
   const isTopicChannel = isMusicChannel(channel);
   const hasKeywords    = hasMusicKeywords(title);
   const dashMatch      = title.match(/^(.+?)\s+[-–—]\s+(.+)$/);
@@ -382,32 +393,25 @@ function parseTitle(title, channel) {
     return { type: 'video', displayTitle: title, artist: null };
   }
 
-  // ── Extract artist & song name ───────────────────────────
   let artist = null;
   let songName = title;
 
   if (isTopicChannel && !dashMatch) {
-    // Topic channel, no dash: whole title is the song name, channel is artist
     artist   = cleanArtistName(channel);
     songName = cleanSongName(title);
   } else if (dashMatch) {
-    // "Artist - Song Title (Official Video)" pattern
     let rawArtist = dashMatch[1].trim();
     let rawSong   = dashMatch[2].trim();
 
-    // Sometimes the pattern is reversed for non-English content — heuristic:
-    // the shorter side without suffix noise is likely the artist
     const cleanedRight = cleanSongName(rawSong);
     const cleanedLeft  = cleanSongName(rawArtist);
 
     artist   = cleanedLeft;
     songName = cleanedRight;
 
-    // Pull featured artists from the raw song segment and append to artist
     const feat = parseFeatFromTitle(rawSong) || parseFeatFromTitle(rawArtist);
     if (feat) artist += ` ft. ${feat}`;
   } else {
-    // Has music keywords but no dash — just strip suffixes from title
     if (channel) artist = cleanArtistName(channel);
     songName = cleanSongName(title);
   }
@@ -448,13 +452,13 @@ async function fetchSingle() {
 }
 
 function renderSingleCard(meta) {
-  const { vid, title, parsed } = meta;
+  const { vid, title } = meta;
   const tierlist = isTlSingle();
   const url = thumbUrl(vid, currentQuality);
   const effectiveType = getSingleType();
 
-  const editableTitle = tierlist ? getSingleEditableTitle() : title;
-  const editableArtist = tierlist ? getSingleEditableArtist() : '';
+  const editableTitle = tierlist ? getItemEditableTitle(meta) : title;
+  const editableArtist = tierlist ? getItemEditableArtist(meta) : '';
   let mainTitle, artistLine = '', badgeHtml = '', typeControls = '';
   if (tierlist) {
     mainTitle = `<div class="vid-title editable-text" contenteditable="true" spellcheck="false" onblur="commitSingleEdit('title', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(editableTitle)}</div>`;
@@ -507,16 +511,18 @@ function handleThumbError(vid) {
   const fallbacks = ['sddefault','hqdefault','mqdefault','default'];
   const tried = img.dataset.tried ? img.dataset.tried.split(',') : [];
   const next = fallbacks.find(q => !tried.includes(q) && q !== currentQuality);
-  if (next) { tried.push(next); img.dataset.tried = tried.join(','); img.src = thumbUrl(img.closest('.result-card') ? singleMeta?.vid : '', next); }
+  if (next) { tried.push(next); img.dataset.tried = tried.join(','); img.src = thumbUrl(vid, next); }
   else img.parentElement.innerHTML = `<div class="thumb-error">Thumbnail not found.</div>`;
 }
 
 async function downloadSingle(vid, quality) {
   const url = thumbUrl(vid, quality);
+  const tierlist = isTlSingle();
+  const base = (singleMeta && singleMeta.vid === vid) ? filenameBase(singleMeta, tierlist) : vid;
   try {
     const res = await fetch(url);
     const blob = await res.blob();
-    triggerDownload(URL.createObjectURL(blob), `thumbnail_${vid}_${quality}.jpg`);
+    triggerDownload(URL.createObjectURL(blob), `${base}_${quality}.jpg`);
   } catch {
     const a = document.createElement('a');
     a.href = url; a.target = '_blank'; a.click();
@@ -527,8 +533,8 @@ async function downloadTierlistCard() {
   if (!singleMeta) return;
   const blob = await renderTierlistBlob(singleMeta, currentQuality);
   if (blob) {
-    const name = (singleMeta.parsed.displayTitle || singleMeta.title).replace(/[\\/:*?"<>|]/g,'_').substring(0,60);
-    triggerDownload(URL.createObjectURL(blob), `${name}_${singleMeta.vid}.png`);
+    const base = filenameBase(singleMeta, true);
+    triggerDownload(URL.createObjectURL(blob), `${base}.png`);
   }
 }
 
@@ -538,8 +544,31 @@ function triggerDownload(href, filename) {
   setTimeout(() => URL.revokeObjectURL(href), 5000);
 }
 
-/* ─── Playlist ────────────────────────────────────────────── */
-async function fetchPlaylist() {
+/* ─── Batch: add a single video ──────────────────────────── */
+async function addVideoToBatch() {
+  const input = document.getElementById('batch-add-url');
+  const raw = input.value.trim();
+  const vid = extractVideoId(raw);
+  if (!vid) {
+    setStatus('pl-status', 'Could not find a valid video ID in that URL.', 'error');
+    return;
+  }
+  if (batchItems.some(x => x.vid === vid)) {
+    setStatus('pl-status', 'That video is already in the batch.', 'error');
+    return;
+  }
+  setStatus('pl-status', 'Adding video…');
+  const oEmbed = await fetchOEmbed(vid);
+  const title   = oEmbed?.title   || `Video ${vid}`;
+  const channel = oEmbed?.channel || null;
+  batchItems.push({ vid, title, channel, parsed: parseTitle(title, channel) });
+  input.value = '';
+  setStatus('pl-status', `${batchItems.length} video${batchItems.length === 1 ? '' : 's'} in batch.`, 'success');
+  renderBatchGrid(batchItems);
+}
+
+/* ─── Batch: import a playlist (merges into the batch) ───── */
+async function importPlaylist() {
   const apiKey = document.getElementById('yt-api-key').value.trim();
   const raw    = document.getElementById('playlist-url').value.trim();
   const plId   = extractPlaylistId(raw);
@@ -547,10 +576,8 @@ async function fetchPlaylist() {
   if (!plId)   { setStatus('pl-status','Could not find a valid playlist ID.','error'); return; }
 
   document.getElementById('pl-btn').disabled = true;
-  document.getElementById('playlist-result').innerHTML = '';
-  document.getElementById('batch-bar-wrap').innerHTML = '';
-  playlistItems = [];
   setStatus('pl-status','Fetching playlist…');
+  let added = 0;
 
   try {
     let nextPage = '';
@@ -561,17 +588,18 @@ async function fetchPlaylist() {
       for (const item of data.items) {
         const s   = item.snippet;
         const vid = s.resourceId?.videoId;
-        if (!vid) continue;
+        if (!vid || batchItems.some(x => x.vid === vid)) continue;
         const title   = s.title;
         const channel = s.videoOwnerChannelTitle || null;
-        playlistItems.push({ vid, title, channel, parsed: parseTitle(title, channel) });
+        batchItems.push({ vid, title, channel, parsed: parseTitle(title, channel) });
+        added++;
       }
       nextPage = data.nextPageToken || '';
-      setStatus('pl-status', `Found ${playlistItems.length} videos…`);
+      setStatus('pl-status', `Found ${added} new video${added === 1 ? '' : 's'}…`);
     } while (nextPage);
 
-    setStatus('pl-status', `${playlistItems.length} videos found.`, 'success');
-    renderPlaylistGrid(playlistItems);
+    setStatus('pl-status', `Added ${added} video${added === 1 ? '' : 's'}. ${batchItems.length} total in batch.`, 'success');
+    renderBatchGrid(batchItems);
   } catch (e) {
     setStatus('pl-status', 'Error: ' + e.message, 'error');
   } finally {
@@ -579,13 +607,28 @@ async function fetchPlaylist() {
   }
 }
 
-function renderPlaylistGrid(items) {
+function clearBatch() {
+  batchItems = [];
+  renderBatchGrid(batchItems);
+  setStatus('pl-status', 'Batch cleared.');
+}
+
+function renderBatchGrid(items) {
   const tierlist = isTlPlaylist();
+  const result = document.getElementById('playlist-result');
+  const barWrap = document.getElementById('batch-bar-wrap');
+
+  if (!items.length) {
+    result.innerHTML = '';
+    barWrap.innerHTML = '';
+    return;
+  }
+
   const grid = document.createElement('div');
   grid.className = 'playlist-grid';
 
   for (const item of items) {
-    const { vid, title, parsed } = item;
+    const { vid, title } = item;
     const card = document.createElement('div');
     card.className = 'grid-thumb' + (tierlist ? ' tl' : '');
     const effectiveType = getItemType(item);
@@ -600,95 +643,56 @@ function renderPlaylistGrid(items) {
         : `<span class="gt-badge badge-video">▶ Video</span>`;
       typeControls = `
         <div class="type-switch" aria-label="Tierlist type override">
-          <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitPlaylistEdit('${vid}', 'type', 'video')">Video</button>
-          <button class="type-btn${effectiveType === 'song' ? ' active' : ''}" onclick="commitPlaylistEdit('${vid}', 'type', 'song')">Song</button>
+          <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitBatchEdit('${vid}', 'type', 'video')">Video</button>
+          <button class="type-btn${effectiveType === 'song' ? ' active' : ''}" onclick="commitBatchEdit('${vid}', 'type', 'song')">Song</button>
         </div>`;
     }
 
     card.innerHTML = `
+      <button class="gt-remove" title="Remove from batch" onclick="removeFromBatch('${vid}')">×</button>
       <img src="${thumbUrl(vid, plQuality)}" alt="${escHtml(title)}"
            onerror="this.src='${thumbUrl(vid,'hqdefault')}'" />
-      <div class="gt-title${tierlist ? ' editable-text' : ''}" ${tierlist ? 'contenteditable="true" spellcheck="false" onblur="commitPlaylistEdit(\'' + vid + '\', \'title\', this.innerText)" onkeydown="stopEditableEnter(event)"' : ''} title="${escHtml(mainText)}">${escHtml(mainText)}</div>
-      ${subText !== null ? `<div class="gt-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitPlaylistEdit('${vid}', 'artist', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(subText)}</div>` : ''}
+      <div class="gt-title${tierlist ? ' editable-text' : ''}" ${tierlist ? 'contenteditable="true" spellcheck="false" onblur="commitBatchEdit(\'' + vid + '\', \'title\', this.innerText)" onkeydown="stopEditableEnter(event)"' : ''} title="${escHtml(mainText)}">${escHtml(mainText)}</div>
+      ${subText !== null ? `<div class="gt-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitBatchEdit('${vid}', 'artist', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(subText)}</div>` : ''}
       ${badge}
       ${typeControls}`;
     grid.appendChild(card);
   }
 
-  const result = document.getElementById('playlist-result');
   result.innerHTML = '';
   result.appendChild(grid);
 
-  document.getElementById('batch-bar-wrap').innerHTML = `
+  barWrap.innerHTML = `
     <div class="batch-bar">
       <button class="primary" onclick="downloadZip()">Download All as ZIP</button>
+      <button class="secondary" onclick="clearBatch()">Clear batch</button>
       <div class="progress-wrap"><div class="progress-bar" id="prog-bar"></div></div>
-      <span class="progress-label" id="prog-label">${items.length} thumbnails</span>
+      <span class="progress-label" id="prog-label">${items.length} thumbnail${items.length === 1 ? '' : 's'}</span>
     </div>
     ${tierlist ? '<div class="tl-note">ZIP will contain square tierlist cards (.png) with labels baked in.</div>' : ''}`;
 }
 
-/* ─── Canvas: render tierlist card ───────────────────────── */
-async function renderTierlistBlob(item, quality) {
-  const { vid, title, parsed } = item;
-  const url = thumbUrl(vid, quality || plQuality);
-  return new Promise(resolve => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const SIZE    = 400;
-      const effectiveType = getItemType(item);
-      const LABEL_H = effectiveType === 'song' && (item.editableArtist ?? parsed.artist) ? 72 : 52;
-      const canvas  = document.createElement('canvas');
-      canvas.width  = SIZE;
-      canvas.height = SIZE + LABEL_H;
-      const ctx = canvas.getContext('2d');
-
-      // Background
-      ctx.fillStyle = '#111';
-      ctx.fillRect(0, 0, SIZE, SIZE + LABEL_H);
-
-      // Square-crop the thumbnail (center crop)
-      const side = Math.min(img.width, img.height);
-      const sx   = (img.width  - side) / 2;
-      const sy   = (img.height - side) / 2;
-      ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
-
-      // Label bar
-      ctx.fillStyle = '#161616';
-      ctx.fillRect(0, SIZE, SIZE, LABEL_H);
-      ctx.fillStyle = 'rgba(255,255,255,0.06)';
-      ctx.fillRect(0, SIZE, SIZE, 1);
-
-      // Main title
-      ctx.textAlign = 'center';
-      const mainText = item.editableTitle ?? parsed.displayTitle ?? title;
-      const subText  = effectiveType === 'song' ? (item.editableArtist ?? parsed.artist) : null;
-      const maxW     = SIZE - 28;
-      const midY     = SIZE + (subText ? LABEL_H * 0.38 : LABEL_H * 0.55);
-
-      ctx.font      = `600 15px "Segoe UI", system-ui, sans-serif`;
-      ctx.fillStyle = '#f1f1f1';
-      ctx.fillText(truncateCanvas(ctx, mainText, maxW), SIZE / 2, midY);
-
-      // Artist subtext
-      if (subText) {
-        ctx.font      = `13px "Segoe UI", system-ui, sans-serif`;
-        ctx.fillStyle = '#888';
-        ctx.fillText(truncateCanvas(ctx, subText, maxW), SIZE / 2, SIZE + LABEL_H * 0.72);
-      }
-
-      canvas.toBlob(resolve, 'image/png');
-    };
-    img.onerror = () => {
-      // fallback to hqdefault
-      if (!img.dataset.retry) {
-        img.dataset.retry = '1';
-        img.src = thumbUrl(vid, 'hqdefault');
-      } else resolve(null);
-    };
-    img.src = url;
-  });
+/* ─── Canvas: render tierlist card ───────────────────────────
+   Full 1:1 square — the thumbnail fills the entire card, and the
+   title/artist are drawn as centered, bold black text with a white
+   stroke directly on top, so it reads clearly even when the card is
+   shrunk down small in a tierlist. */
+function wrapText(ctx, text, maxWidth) {
+  const words = (text || '').split(/\s+/).filter(Boolean);
+  if (!words.length) return [''];
+  const lines = [];
+  let current = words[0];
+  for (let i = 1; i < words.length; i++) {
+    const test = current + ' ' + words[i];
+    if (ctx.measureText(test).width <= maxWidth) {
+      current = test;
+    } else {
+      lines.push(current);
+      current = words[i];
+    }
+  }
+  lines.push(current);
+  return lines.map(l => ctx.measureText(l).width <= maxWidth ? l : truncateCanvas(ctx, l, maxWidth));
 }
 
 function truncateCanvas(ctx, text, maxWidth) {
@@ -699,9 +703,96 @@ function truncateCanvas(ctx, text, maxWidth) {
   return t + '…';
 }
 
+async function renderTierlistBlob(item, quality) {
+  const { vid } = item;
+  const url = thumbUrl(vid, quality || plQuality);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const SIZE = 500;
+      const canvas = document.createElement('canvas');
+      canvas.width = SIZE;
+      canvas.height = SIZE;
+      const ctx = canvas.getContext('2d');
+
+      // Cover-crop the thumbnail to fill the entire square — nothing is cut
+      // off into a separate strip, the whole card is a true 1:1 image.
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+
+      const effectiveType = getItemType(item);
+      const mainText = getItemEditableTitle(item) || item.title || '';
+      const subText  = effectiveType === 'song' ? getItemEditableArtist(item) : '';
+
+      const maxWidth = SIZE - 56;
+      const maxBlockHeight = SIZE - 64;
+
+      // Auto-fit: shrink the title font until it wraps to at most 3 lines
+      // and the whole text block fits comfortably inside the square.
+      let titleSize = 52;
+      let titleLines = [mainText];
+      let titleLineHeight = titleSize * 1.15;
+      let artistSize = 0;
+
+      while (titleSize >= 18) {
+        ctx.font = `800 ${titleSize}px "Segoe UI", system-ui, sans-serif`;
+        titleLines = wrapText(ctx, mainText, maxWidth);
+        titleLineHeight = titleSize * 1.15;
+        artistSize = Math.max(15, Math.round(titleSize * 0.4));
+        const artistBlock = subText ? artistSize * 1.3 + 12 : 0;
+        const totalHeight = titleLines.length * titleLineHeight + artistBlock;
+        if (titleLines.length <= 3 && totalHeight <= maxBlockHeight) break;
+        titleSize -= 2;
+      }
+
+      const artistLineHeight = subText ? artistSize * 1.3 : 0;
+      const gap = subText ? 12 : 0;
+      const blockHeight = (titleLines.length * titleLineHeight) + (subText ? gap + artistLineHeight : 0);
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+
+      let cursorTop = SIZE / 2 - blockHeight / 2;
+
+      ctx.font = `800 ${titleSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.lineWidth = Math.max(5, titleSize * 0.15);
+      ctx.strokeStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
+      for (const line of titleLines) {
+        const baselineY = cursorTop + titleLineHeight / 2;
+        ctx.strokeText(line, SIZE / 2, baselineY);
+        ctx.fillText(line, SIZE / 2, baselineY);
+        cursorTop += titleLineHeight;
+      }
+
+      if (subText) {
+        cursorTop += gap;
+        const baselineY = cursorTop + artistLineHeight / 2;
+        ctx.font = `700 ${artistSize}px "Segoe UI", system-ui, sans-serif`;
+        ctx.lineWidth = Math.max(4, artistSize * 0.18);
+        ctx.strokeText(subText, SIZE / 2, baselineY);
+        ctx.fillText(subText, SIZE / 2, baselineY);
+      }
+
+      canvas.toBlob(resolve, 'image/png');
+    };
+    img.onerror = () => {
+      if (!img.dataset.retry) {
+        img.dataset.retry = '1';
+        img.src = thumbUrl(vid, 'hqdefault');
+      } else resolve(null);
+    };
+    img.src = url;
+  });
+}
+
 /* ─── ZIP download ────────────────────────────────────────── */
 async function downloadZip() {
-  if (!playlistItems.length) return;
+  if (!batchItems.length) return;
   const tierlist = isTlPlaylist();
   const zip      = new JSZip();
   const folder   = zip.folder('thumbnails');
@@ -709,7 +800,7 @@ async function downloadZip() {
   const bar   = document.getElementById('prog-bar');
   const label = document.getElementById('prog-label');
 
-  for (const item of playlistItems) {
+  for (const item of batchItems) {
     let blob = null;
     if (tierlist) {
       blob = await renderTierlistBlob(item, plQuality);
@@ -718,12 +809,11 @@ async function downloadZip() {
         try { const r = await fetch(thumbUrl(item.vid, q)); if (r.ok) { blob = await r.blob(); break; } } catch {}
       }
     }
-    const safeName = (item.parsed.displayTitle || item.title)
-      .replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g,' ').trim().substring(0, 70);
-    if (blob) folder.file(`${safeName}_${item.vid}.${tierlist ? 'png' : 'jpg'}`, blob);
+    const base = filenameBase(item, tierlist);
+    if (blob) folder.file(`${base}_${item.vid}.${tierlist ? 'png' : 'jpg'}`, blob);
     done++;
-    bar.style.width   = Math.round(done / playlistItems.length * 100) + '%';
-    label.textContent = `${done} / ${playlistItems.length}`;
+    bar.style.width   = Math.round(done / batchItems.length * 100) + '%';
+    label.textContent = `${done} / ${batchItems.length}`;
   }
 
   const zipBlob = await zip.generateAsync({ type: 'blob' });
