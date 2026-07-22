@@ -94,6 +94,17 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .gt-badge { margin: 0 8px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; }
 .gt-remove { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
 .gt-remove:hover { background: rgba(255,0,0,0.85); }
+.thumb-edit-row { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 2; }
+.thumb-edit-btn, .thumb-reset-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.thumb-edit-btn:hover, .thumb-reset-btn:hover { background: rgba(255,0,0,0.85); }
+.thumb-edit-btn svg, .thumb-reset-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.gt-edit-btn, .gt-reset-btn { position: absolute; left: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.gt-edit-btn { top: 6px; }
+.gt-reset-btn { top: 32px; }
+.gt-edit-btn:hover, .gt-reset-btn:hover { background: rgba(255,0,0,0.85); }
+.gt-edit-btn svg, .gt-reset-btn svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.gt-custom-note { margin: 0 8px 8px; font-size: 0.68rem; color: var(--muted); font-style: italic; }
 .qual-select { display: block; margin: 0 8px 8px; width: calc(100% - 16px); background: var(--surface2); border: 1px solid var(--border2); border-radius: 999px; color: var(--text); font-size: 0.68rem; padding: 4px 8px; cursor: pointer; outline: none; }
 .qual-select:focus { border-color: var(--accent); }
 
@@ -200,6 +211,9 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 </div>
 
 </div><!-- /container -->
+
+<input type="file" id="single-img-input" accept="image/*" style="display:none" onchange="onSingleImageChange(event)" />
+<input type="file" id="batch-img-input" accept="image/*" style="display:none" onchange="onBatchImageChange(event)" />
 
 <script>
 /* ─── State ───────────────────────────────────────────────── */
@@ -330,6 +344,30 @@ function stopEditableEnter(e) {
    Filenames reflect whatever is currently shown/edited for the item
    (the tierlist title/artist when tierlist mode is on) so downloaded
    files are easy to match back to their tierlist card. */
+/* ─── Custom image uploads ───────────────────────────────────
+   Lets you swap in your own image if the fetched YouTube thumbnail
+   is wrong, missing, or just not what you want. */
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function dataUrlToBlob(dataUrl) {
+  const res = await fetch(dataUrl);
+  return res.blob();
+}
+function extFromMime(mime, fallback) {
+  if (!mime) return fallback;
+  if (mime.includes('png')) return 'png';
+  if (mime.includes('webp')) return 'webp';
+  if (mime.includes('gif')) return 'gif';
+  if (mime.includes('jpeg') || mime.includes('jpg')) return 'jpg';
+  return fallback;
+}
+
 function sanitizeFilename(s) {
   return (s || '').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
 }
@@ -493,7 +531,15 @@ function renderSingleCard(meta) {
   document.getElementById('single-result').innerHTML = `
     <div class="result-card">
       <div class="thumb-wrap${tierlist ? ' square' : ''}">
-        <img id="thumb-img" src="${url}" alt="Thumbnail" onerror="handleThumbError('${vid}')" />
+        <div class="thumb-edit-row">
+          <button class="thumb-edit-btn" title="Upload a custom image" onclick="triggerSingleImagePicker()">
+            <svg viewBox="0 0 24 24"><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          ${singleMeta.customImage ? `<button class="thumb-reset-btn" title="Revert to YouTube thumbnail" onclick="resetSingleImage()">
+            <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          </button>` : ''}
+        </div>
+        <img id="thumb-img" src="${singleMeta.customImage || url}" alt="Thumbnail" onerror="handleThumbError('${vid}')" />
       </div>
       <div class="card-body">
         <div class="card-meta">
@@ -517,6 +563,22 @@ function renderSingleCard(meta) {
     </div>`;
 }
 
+function triggerSingleImagePicker() {
+  document.getElementById('single-img-input').click();
+}
+async function onSingleImageChange(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || !singleMeta) return;
+  singleMeta.customImage = await readFileAsDataUrl(file);
+  renderSingleCard(singleMeta);
+}
+function resetSingleImage() {
+  if (!singleMeta) return;
+  delete singleMeta.customImage;
+  renderSingleCard(singleMeta);
+}
+
 function handleThumbError(vid) {
   const img = document.getElementById('thumb-img');
   if (!img) return;
@@ -528,16 +590,24 @@ function handleThumbError(vid) {
 }
 
 async function downloadSingle(vid, quality) {
-  const url = thumbUrl(vid, quality);
   const tierlist = isTlSingle();
+  const usingCustom = singleMeta && singleMeta.vid === vid && singleMeta.customImage;
   const base = (singleMeta && singleMeta.vid === vid) ? filenameBase(singleMeta, tierlist) : vid;
   try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    triggerDownload(URL.createObjectURL(blob), `${base}_${quality}.jpg`);
+    let blob;
+    if (usingCustom) {
+      blob = await dataUrlToBlob(singleMeta.customImage);
+    } else {
+      const res = await fetch(thumbUrl(vid, quality));
+      blob = await res.blob();
+    }
+    const ext = usingCustom ? extFromMime(blob.type, 'jpg') : 'jpg';
+    const suffix = usingCustom ? 'custom' : quality;
+    triggerDownload(URL.createObjectURL(blob), `${base}_${suffix}.${ext}`);
   } catch {
     const a = document.createElement('a');
-    a.href = url; a.target = '_blank'; a.click();
+    a.href = usingCustom ? singleMeta.customImage : thumbUrl(vid, quality);
+    a.target = '_blank'; a.click();
   }
 }
 
@@ -619,9 +689,32 @@ async function importPlaylist() {
   }
 }
 
-function handleGridThumbError(img, vid) {
-  const fallbacks = ['sddefault', 'hqdefault', 'mqdefault', 'default'];
+function triggerBatchImagePicker(vid) {
+  const input = document.getElementById('batch-img-input');
+  input.dataset.targetVid = vid;
+  input.click();
+}
+async function onBatchImageChange(e) {
+  const file = e.target.files[0];
+  const vid = e.target.dataset.targetVid;
+  e.target.value = '';
+  if (!file || !vid) return;
   const item = batchItems.find(x => x.vid === vid);
+  if (!item) return;
+  item.customImage = await readFileAsDataUrl(file);
+  renderBatchGrid(batchItems);
+}
+function resetBatchImage(vid) {
+  const item = batchItems.find(x => x.vid === vid);
+  if (!item) return;
+  delete item.customImage;
+  renderBatchGrid(batchItems);
+}
+
+function handleGridThumbError(img, vid) {
+  const item = batchItems.find(x => x.vid === vid);
+  if (item && item.customImage) return;
+  const fallbacks = ['sddefault', 'hqdefault', 'mqdefault', 'default'];
   const startQ = item ? getItemQuality(item) : plQuality;
   const tried = img.dataset.tried ? img.dataset.tried.split(',') : [];
   const next = fallbacks.find(q => !tried.includes(q) && q !== startQ);
@@ -670,7 +763,9 @@ function renderBatchGrid(items) {
     }
 
     const itemQuality = getItemQuality(item);
-    const qualitySelect = `
+    const hasCustom = !!item.customImage;
+    const imgSrc = item.customImage || thumbUrl(vid, itemQuality);
+    const qualitySelect = hasCustom ? `<div class="gt-custom-note">Custom image</div>` : `
       <select class="qual-select" title="Thumbnail quality for this video" onchange="setItemQuality('${vid}', this.value)">
         <option value="auto" ${!item.qualityOverride ? 'selected' : ''}>Auto (${qualityLabel(plQuality).split(' ')[0]})</option>
         <option value="maxresdefault" ${item.qualityOverride === 'maxresdefault' ? 'selected' : ''}>Max</option>
@@ -681,7 +776,13 @@ function renderBatchGrid(items) {
 
     card.innerHTML = `
       <button class="gt-remove" title="Remove from batch" onclick="removeFromBatch('${vid}')">×</button>
-      <img src="${thumbUrl(vid, itemQuality)}" alt="${escHtml(title)}"
+      <button class="gt-edit-btn" title="Upload a custom image" onclick="triggerBatchImagePicker('${vid}')">
+        <svg viewBox="0 0 24 24"><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </button>
+      ${hasCustom ? `<button class="gt-reset-btn" title="Revert to YouTube thumbnail" onclick="resetBatchImage('${vid}')">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>` : ''}
+      <img src="${imgSrc}" alt="${escHtml(title)}"
            onerror="handleGridThumbError(this, '${vid}')" />
       <div class="gt-title${tierlist ? ' editable-text' : ''}" ${tierlist ? 'contenteditable="true" spellcheck="false" onblur="commitBatchEdit(\'' + vid + '\', \'title\', this.innerText)" onkeydown="stopEditableEnter(event)"' : ''} title="${escHtml(mainText)}">${escHtml(mainText)}</div>
       ${subText !== null ? `<div class="gt-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitBatchEdit('${vid}', 'artist', this.innerText)" onkeydown="stopEditableEnter(event)">${escHtml(subText)}</div>` : ''}
@@ -737,10 +838,11 @@ function truncateCanvas(ctx, text, maxWidth) {
 
 async function renderTierlistBlob(item, quality) {
   const { vid } = item;
-  const url = thumbUrl(vid, quality || plQuality);
+  const usingCustom = !!item.customImage;
+  const url = item.customImage || thumbUrl(vid, quality || plQuality);
   return new Promise(resolve => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    if (!usingCustom) img.crossOrigin = 'anonymous';
     img.onload = () => {
       const SIZE = 500;
       const canvas = document.createElement('canvas');
@@ -813,6 +915,7 @@ async function renderTierlistBlob(item, quality) {
       canvas.toBlob(resolve, 'image/png');
     };
     img.onerror = () => {
+      if (usingCustom) { resolve(null); return; }
       if (!img.dataset.retry) {
         img.dataset.retry = '1';
         img.src = thumbUrl(vid, 'hqdefault');
@@ -835,15 +938,19 @@ async function downloadZip() {
   for (const item of batchItems) {
     const itemQuality = getItemQuality(item);
     let blob = null;
+    let ext = tierlist ? 'png' : 'jpg';
     if (tierlist) {
       blob = await renderTierlistBlob(item, itemQuality);
+    } else if (item.customImage) {
+      blob = await dataUrlToBlob(item.customImage);
+      ext = extFromMime(blob?.type, 'jpg');
     } else {
       for (const q of [...new Set([itemQuality,'sddefault','hqdefault','mqdefault'])]) {
         try { const r = await fetch(thumbUrl(item.vid, q)); if (r.ok) { blob = await r.blob(); break; } } catch {}
       }
     }
     const base = filenameBase(item, tierlist);
-    if (blob) folder.file(`${base}_${item.vid}.${tierlist ? 'png' : 'jpg'}`, blob);
+    if (blob) folder.file(`${base}_${item.vid}.${ext}`, blob);
     done++;
     bar.style.width   = Math.round(done / batchItems.length * 100) + '%';
     label.textContent = `${done} / ${batchItems.length}`;
