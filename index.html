@@ -42,13 +42,15 @@ button.primary:active { transform: scale(0.98); }
 button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
 button.secondary { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); padding: 10px 16px; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
 button.secondary:hover { background: var(--surface2); }
+button.secondary.sm-btn { padding: 7px 12px; font-size: 0.78rem; }
 
 .controls-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
 .quality-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .quality-btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
 .quality-btn:hover { border-color: var(--border2); }
 .quality-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-.tierlist-toggle { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.right-controls { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.tierlist-toggle { display: flex; align-items: center; gap: 8px; }
 .tierlist-toggle span { font-size: 0.82rem; color: var(--muted); user-select: none; }
 .toggle-switch { position: relative; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
@@ -58,7 +60,7 @@ button.secondary:hover { background: var(--surface2); }
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); background: var(--accent); }
 
 .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 1.25rem; }
-.thumb-wrap { position: relative; background: #000; aspect-ratio: 16/9; overflow: hidden; }
+.thumb-wrap { position: relative; background: #000; aspect-ratio: 16/9; overflow: hidden; transition: outline 0.1s; }
 .thumb-wrap.square { aspect-ratio: 1/1; }
 .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumb-error { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 0.85rem; padding: 2rem; text-align: center; }
@@ -83,23 +85,26 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .api-note { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
 .api-note a { color: #4ea8ff; text-decoration: none; }
 .api-note a:hover { text-decoration: underline; }
-.api-key-row { display: flex; gap: 8px; margin-bottom: 0.85rem; align-items: center; }
+.api-key-status { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.85rem; }
+.api-key-row { display: none; gap: 8px; margin-bottom: 0.85rem; align-items: center; }
+.link-btn { background: none; border: none; color: #4ea8ff; font-size: inherit; cursor: pointer; padding: 0; text-decoration: underline; font-family: inherit; }
+.link-btn:hover { color: #7dc0ff; }
 
 .playlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 1.25rem; }
-.grid-thumb { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.grid-thumb { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; transition: outline 0.1s; }
 .grid-thumb img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
 .grid-thumb.tl img { aspect-ratio: 1/1; }
 .gt-title { padding: 6px 8px 2px; font-size: 0.75rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .gt-artist { padding: 0 8px 4px; font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
 .gt-badge { margin: 0 8px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; }
-.gt-remove { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.gt-remove { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; z-index: 2; }
 .gt-remove:hover { background: rgba(255,0,0,0.85); }
 .thumb-edit-row { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 2; }
 .thumb-edit-btn, .thumb-reset-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
 .thumb-edit-btn:hover, .thumb-reset-btn:hover { background: rgba(255,0,0,0.85); }
 .thumb-edit-btn svg, .thumb-reset-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-.gt-edit-btn, .gt-reset-btn { position: absolute; left: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.gt-edit-btn, .gt-reset-btn { position: absolute; left: 6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; z-index: 2; }
 .gt-edit-btn { top: 6px; }
 .gt-reset-btn { top: 32px; }
 .gt-edit-btn:hover, .gt-reset-btn:hover { background: rgba(255,0,0,0.85); }
@@ -107,6 +112,9 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .gt-custom-note { margin: 0 8px 8px; font-size: 0.68rem; color: var(--muted); font-style: italic; }
 .qual-select { display: block; margin: 0 8px 8px; width: calc(100% - 16px); background: var(--surface2); border: 1px solid var(--border2); border-radius: 999px; color: var(--text); font-size: 0.68rem; padding: 4px 8px; cursor: pointer; outline: none; }
 .qual-select:focus { border-color: var(--accent); }
+
+.drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.drag-over-hint { position: absolute; inset: 0; background: rgba(255,0,0,0.15); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 600; text-align: center; padding: 8px; pointer-events: none; z-index: 3; }
 
 .batch-bar { display: flex; align-items: center; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
 .progress-wrap { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; height: 6px; overflow: hidden; min-width: 80px; }
@@ -121,6 +129,30 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .type-switch { display: inline-flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
 .type-btn { border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; transition: all 0.15s; }
 .type-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* Text style modal */
+.style-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+.style-modal-backdrop.open { display: flex; }
+.style-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); max-width: 660px; width: 100%; max-height: 90vh; overflow-y: auto; }
+.style-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.style-modal-header h3 { font-size: 1rem; font-weight: 700; }
+.style-close { background: transparent; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 4px; }
+.style-close:hover { color: var(--text); }
+.style-modal-body { display: flex; gap: 20px; padding: 18px; flex-wrap: wrap; }
+.style-preview-wrap { flex: 0 0 auto; margin: 0 auto; }
+#style-preview-canvas { width: 260px; height: 260px; border-radius: var(--radius-sm); background: #111; cursor: grab; touch-action: none; border: 1px solid var(--border); display: block; }
+#style-preview-canvas:active { cursor: grabbing; }
+.style-hint { font-size: 0.72rem; color: var(--muted); margin-top: 8px; text-align: center; width: 260px; }
+.style-controls { flex: 1 1 220px; display: flex; flex-direction: column; gap: 12px; min-width: 210px; }
+.style-controls label.field { font-size: 0.72rem; color: var(--muted); display: flex; flex-direction: column; gap: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.style-controls select { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); padding: 7px 10px; font-size: 0.82rem; }
+.style-controls input[type="color"] { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); height: 34px; padding: 3px; cursor: pointer; }
+.style-controls input[type="range"] { width: 100%; accent-color: var(--accent); }
+.style-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.style-checkline { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text); font-weight: 500; text-transform: none; letter-spacing: normal; }
+.style-color-row { display: flex; gap: 10px; }
+.style-color-row .field { flex: 1; }
+.style-modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -154,12 +186,15 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
       <button class="quality-btn" data-q="hqdefault" onclick="setQuality(this)">HQ (480×360)</button>
       <button class="quality-btn" data-q="mqdefault" onclick="setQuality(this)">MQ (320×180)</button>
     </div>
-    <div class="tierlist-toggle">
-      <span>Tierlist mode</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="tl-single" onchange="onSingleTlToggle()" />
-        <span class="toggle-slider"></span>
-      </label>
+    <div class="right-controls">
+      <button class="secondary sm-btn" onclick="openStyleModal('single')">✎ Text style</button>
+      <div class="tierlist-toggle">
+        <span>Tierlist mode</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="tl-single" onchange="onSingleTlToggle()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
   </div>
   <div class="status" id="single-status"></div>
@@ -182,8 +217,10 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
   </div>
 
   <div class="section-label">Import a playlist</div>
-  <div class="api-key-row">
+  <div class="api-key-status" id="api-key-status"></div>
+  <div class="api-key-row" id="api-key-row">
     <input type="password" id="yt-api-key" placeholder="YT API key (AIza…)" style="flex:1" />
+    <button class="secondary sm-btn" onclick="saveApiKey()">Save</button>
   </div>
   <div class="input-group">
     <input type="text" id="playlist-url" placeholder="Paste YouTube playlist URL or ID…" onkeydown="if(event.key==='Enter')importPlaylist()" />
@@ -197,12 +234,15 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
       <button class="quality-btn" data-q="hqdefault" onclick="setPlQuality(this)">HQ</button>
       <button class="quality-btn" data-q="mqdefault" onclick="setPlQuality(this)">MQ</button>
     </div>
-    <div class="tierlist-toggle">
-      <span>Tierlist mode</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="tl-playlist" onchange="onPlTlToggle()" />
-        <span class="toggle-slider"></span>
-      </label>
+    <div class="right-controls">
+      <button class="secondary sm-btn" onclick="openStyleModal('batch')">✎ Text style</button>
+      <div class="tierlist-toggle">
+        <span>Tierlist mode</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="tl-playlist" onchange="onPlTlToggle()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
   </div>
   <div class="status" id="pl-status"></div>
@@ -215,12 +255,79 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 <input type="file" id="single-img-input" accept="image/*" style="display:none" onchange="onSingleImageChange(event)" />
 <input type="file" id="batch-img-input" accept="image/*" style="display:none" onchange="onBatchImageChange(event)" />
 
+<!-- Text style editor -->
+<div class="style-modal-backdrop" id="style-modal">
+  <div class="style-modal">
+    <div class="style-modal-header">
+      <h3>Tierlist Text Style</h3>
+      <button class="style-close" onclick="closeStyleModal()">×</button>
+    </div>
+    <div class="style-modal-body">
+      <div class="style-preview-wrap">
+        <canvas id="style-preview-canvas" width="320" height="320"></canvas>
+        <div class="style-hint">Drag the text on the preview to reposition it. This style applies to every tierlist card.</div>
+      </div>
+      <div class="style-controls">
+        <label class="field">Font
+          <select id="style-font" onchange="updateStyle()">
+            <option value='"Segoe UI", system-ui, sans-serif'>Segoe UI (default)</option>
+            <option value='Impact, "Arial Narrow Bold", sans-serif'>Impact</option>
+            <option value='"Arial Black", Arial, sans-serif'>Arial Black</option>
+            <option value='Georgia, serif'>Georgia</option>
+            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
+            <option value='Verdana, Geneva, sans-serif'>Verdana</option>
+            <option value='"Trebuchet MS", sans-serif'>Trebuchet MS</option>
+            <option value='"Courier New", monospace'>Courier New</option>
+            <option value='"Comic Sans MS", "Comic Sans", cursive'>Comic Sans MS</option>
+          </select>
+        </label>
+        <div class="style-row">
+          <label class="style-checkline"><input type="checkbox" id="style-bold" checked onchange="updateStyle()"> Bold</label>
+          <label class="style-checkline"><input type="checkbox" id="style-italic" onchange="updateStyle()"> Italic</label>
+          <label class="style-checkline"><input type="checkbox" id="style-uppercase" onchange="updateStyle()"> UPPERCASE</label>
+        </div>
+        <label class="field">
+          <span class="style-checkline"><input type="checkbox" id="style-autosize" checked onchange="updateStyle()"> Auto-fit size</span>
+          <input type="range" id="style-size" min="16" max="100" value="52" oninput="updateStyle()" disabled />
+        </label>
+        <div class="style-color-row">
+          <label class="field">Text color <input type="color" id="style-fill" value="#000000" onchange="updateStyle()"></label>
+          <label class="field">Stroke color <input type="color" id="style-stroke" value="#ffffff" onchange="updateStyle()"></label>
+        </div>
+        <label class="field">Stroke width
+          <input type="range" id="style-strokewidth" min="0" max="0.3" step="0.01" value="0.15" oninput="updateStyle()" />
+        </label>
+        <button class="secondary sm-btn" onclick="resetStylePosition()">Center text</button>
+      </div>
+    </div>
+    <div class="style-modal-footer">
+      <button class="primary" onclick="closeStyleModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ─── State ───────────────────────────────────────────────── */
 let currentQuality = 'maxresdefault';
 let plQuality      = 'maxresdefault';   // batch quality
 let batchItems     = [];
 let singleMeta     = null;
+
+/* Global tierlist text style, shared by the single-video and batch
+   tierlist card renderers so every card in a set looks consistent. */
+let textStyle = {
+  fontFamily: '"Segoe UI", system-ui, sans-serif',
+  bold: true,
+  italic: false,
+  uppercase: false,
+  autoSize: true,
+  fontSize: 52,       // used only when autoSize is false (reference size at a 500px canvas)
+  fillColor: '#000000',
+  strokeColor: '#ffffff',
+  strokeWidth: 0.15,  // fraction of font size
+  posX: 50,           // percent
+  posY: 50            // percent
+};
 
 /* ─── Tab switching ───────────────────────────────────────── */
 function switchTab(tab) {
@@ -286,7 +393,7 @@ function normalizeEditableText(text) {
 
 /* These accessors work for both singleMeta and items inside batchItems,
    since both share the same { title, channel, parsed, editableTitle,
-   editableArtist, manualType, vid } shape. */
+   editableArtist, manualType, vid, customImage } shape. */
 function getItemEditableTitle(item) {
   return item?.editableTitle ?? item?.parsed?.displayTitle ?? item?.title ?? '';
 }
@@ -340,11 +447,53 @@ function stopEditableEnter(e) {
   }
 }
 
-/* ─── Filename helpers ───────────────────────────────────────
-   Filenames reflect whatever is currently shown/edited for the item
-   (the tierlist title/artist when tierlist mode is on) so downloaded
-   files are easy to match back to their tierlist card. */
-/* ─── Custom image uploads ───────────────────────────────────
+/* ─── API key storage ─────────────────────────────────────────
+   Stored locally in this browser (localStorage) instead of sitting
+   in a plaintext field every time. Nothing is sent anywhere except
+   directly to Google's API when you import a playlist. If localStorage
+   isn't available (e.g. a sandboxed preview), it just falls back to
+   holding the key in memory for this session. */
+const API_KEY_STORAGE_KEY = 'ytThumbDownloader_apiKey';
+let sessionApiKey = '';
+function getApiKey() {
+  try {
+    return localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+  } catch { return sessionApiKey; }
+}
+function setApiKey(key) {
+  sessionApiKey = key;
+  try { localStorage.setItem(API_KEY_STORAGE_KEY, key); } catch { /* fall back to in-memory only */ }
+}
+function renderApiKeyStatus() {
+  const key = getApiKey();
+  const el = document.getElementById('api-key-status');
+  if (key) {
+    el.innerHTML = `API key saved in this browser. <button class="link-btn" onclick="toggleApiKeyRow()">Change</button> · <button class="link-btn" onclick="clearApiKey()">Remove</button>`;
+  } else {
+    el.innerHTML = `No API key saved yet — <button class="link-btn" onclick="toggleApiKeyRow()">add one</button> (only needed to import a playlist).`;
+  }
+}
+function toggleApiKeyRow() {
+  const row = document.getElementById('api-key-row');
+  const showing = row.style.display === 'flex';
+  row.style.display = showing ? 'none' : 'flex';
+  if (!showing) document.getElementById('yt-api-key').value = getApiKey();
+}
+function saveApiKey() {
+  const val = document.getElementById('yt-api-key').value.trim();
+  setApiKey(val);
+  document.getElementById('api-key-row').style.display = 'none';
+  renderApiKeyStatus();
+  setStatus('pl-status', val ? 'API key saved for this browser.' : 'API key cleared.', 'success');
+}
+function clearApiKey() {
+  setApiKey('');
+  document.getElementById('yt-api-key').value = '';
+  renderApiKeyStatus();
+  setStatus('pl-status', 'API key removed.');
+}
+
+/* ─── Custom image uploads (file picker or drag-and-drop) ────
    Lets you swap in your own image if the fetched YouTube thumbnail
    is wrong, missing, or just not what you want. */
 function readFileAsDataUrl(file) {
@@ -367,7 +516,15 @@ function extFromMime(mime, fallback) {
   if (mime.includes('jpeg') || mime.includes('jpg')) return 'jpg';
   return fallback;
 }
+function firstImageFile(dataTransfer) {
+  if (!dataTransfer) return null;
+  return [...dataTransfer.files].find(f => f.type.startsWith('image/')) || null;
+}
 
+/* ─── Filename helpers ───────────────────────────────────────
+   Filenames reflect whatever is currently shown/edited for the item
+   (the tierlist title/artist when tierlist mode is on) so downloaded
+   files are easy to match back to their tierlist card. */
 function sanitizeFilename(s) {
   return (s || '').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
 }
@@ -530,7 +687,7 @@ function renderSingleCard(meta) {
 
   document.getElementById('single-result').innerHTML = `
     <div class="result-card">
-      <div class="thumb-wrap${tierlist ? ' square' : ''}">
+      <div class="thumb-wrap${tierlist ? ' square' : ''}" id="single-thumb-wrap">
         <div class="thumb-edit-row">
           <button class="thumb-edit-btn" title="Upload a custom image" onclick="triggerSingleImagePicker()">
             <svg viewBox="0 0 24 24"><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -561,6 +718,12 @@ function renderSingleCard(meta) {
         </div>
       </div>
     </div>`;
+
+  wireDropZone(document.getElementById('single-thumb-wrap'), async file => {
+    if (!singleMeta) return;
+    singleMeta.customImage = await readFileAsDataUrl(file);
+    renderSingleCard(singleMeta);
+  });
 }
 
 function triggerSingleImagePicker() {
@@ -626,6 +789,38 @@ function triggerDownload(href, filename) {
   setTimeout(() => URL.revokeObjectURL(href), 5000);
 }
 
+/* ─── Drag-and-drop wiring ────────────────────────────────────
+   Attaches dragover/dragleave/drop listeners to any element that
+   should accept an image file drop, showing a highlighted outline
+   and an overlay hint while dragging. */
+function wireDropZone(el, onFile) {
+  if (!el) return;
+  let hint = null;
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    el.classList.add('drag-over');
+    if (!hint) {
+      hint = document.createElement('div');
+      hint.className = 'drag-over-hint';
+      hint.textContent = 'Drop image to use as thumbnail';
+      el.appendChild(hint);
+    }
+  });
+  el.addEventListener('dragleave', e => {
+    if (e.target !== el && el.contains(e.target)) return;
+    el.classList.remove('drag-over');
+    if (hint) { hint.remove(); hint = null; }
+  });
+  el.addEventListener('drop', async e => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    if (hint) { hint.remove(); hint = null; }
+    const file = firstImageFile(e.dataTransfer);
+    if (file) await onFile(file);
+  });
+}
+
 /* ─── Batch: add a single video ──────────────────────────── */
 async function addVideoToBatch() {
   const input = document.getElementById('batch-add-url');
@@ -651,10 +846,10 @@ async function addVideoToBatch() {
 
 /* ─── Batch: import a playlist (merges into the batch) ───── */
 async function importPlaylist() {
-  const apiKey = document.getElementById('yt-api-key').value.trim();
+  const apiKey = getApiKey();
   const raw    = document.getElementById('playlist-url').value.trim();
   const plId   = extractPlaylistId(raw);
-  if (!apiKey) { setStatus('pl-status','Please enter your YouTube API key.','error'); return; }
+  if (!apiKey) { setStatus('pl-status','Add your YouTube API key first.','error'); toggleApiKeyRow(); return; }
   if (!plId)   { setStatus('pl-status','Could not find a valid playlist ID.','error'); return; }
 
   document.getElementById('pl-btn').disabled = true;
@@ -790,6 +985,11 @@ function renderBatchGrid(items) {
       ${typeControls}
       ${qualitySelect}`;
     grid.appendChild(card);
+
+    wireDropZone(card, async file => {
+      item.customImage = await readFileAsDataUrl(file);
+      renderBatchGrid(batchItems);
+    });
   }
 
   result.innerHTML = '';
@@ -805,11 +1005,9 @@ function renderBatchGrid(items) {
     ${tierlist ? '<div class="tl-note">ZIP will contain square tierlist cards (.png) with labels baked in.</div>' : ''}`;
 }
 
-/* ─── Canvas: render tierlist card ───────────────────────────
-   Full 1:1 square — the thumbnail fills the entire card, and the
-   title/artist are drawn as centered, bold black text with a white
-   stroke directly on top, so it reads clearly even when the card is
-   shrunk down small in a tierlist. */
+/* ─── Canvas drawing helpers ─────────────────────────────────
+   Shared by the live style-editor preview and the final 500px
+   tierlist card render, so what you see is what you get. */
 function wrapText(ctx, text, maxWidth) {
   const words = (text || '').split(/\s+/).filter(Boolean);
   if (!words.length) return [''];
@@ -836,6 +1034,87 @@ function truncateCanvas(ctx, text, maxWidth) {
   return t + '…';
 }
 
+function drawCoverImage(ctx, img, SIZE) {
+  const side = Math.min(img.width, img.height);
+  const sx = (img.width - side) / 2;
+  const sy = (img.height - side) / 2;
+  ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+}
+
+/* Draws the title (and artist, for songs) centered on `style.posX/posY`
+   (percent of SIZE), auto-shrinking to fit unless a manual size is set. */
+function drawTierlistText(ctx, SIZE, item, style) {
+  const scale = SIZE / 500;
+  const effectiveType = getItemType(item);
+  let mainText = getItemEditableTitle(item) || item.title || '';
+  let subText  = effectiveType === 'song' ? (getItemEditableArtist(item) || '') : '';
+  if (style.uppercase) { mainText = mainText.toUpperCase(); subText = subText.toUpperCase(); }
+  if (!mainText) return;
+
+  const maxWidth = SIZE - 56 * scale;
+  const weight = style.bold === false ? 500 : 800;
+  const italicPrefix = style.italic ? 'italic ' : '';
+  const fontFor = size => `${italicPrefix}${weight} ${Math.max(1, size)}px ${style.fontFamily}`;
+
+  let titleSize, titleLines;
+  if (style.autoSize) {
+    titleSize = 52 * scale;
+    const maxBlockHeight = SIZE - 64 * scale;
+    while (titleSize >= 16 * scale) {
+      ctx.font = fontFor(titleSize);
+      titleLines = wrapText(ctx, mainText, maxWidth);
+      const lh = titleSize * 1.15;
+      const asize = Math.max(14 * scale, Math.round(titleSize * 0.4));
+      const ablock = subText ? asize * 1.3 + 12 * scale : 0;
+      if (titleLines.length <= 3 && titleLines.length * lh + ablock <= maxBlockHeight) break;
+      titleSize -= 2 * scale;
+    }
+  } else {
+    titleSize = style.fontSize * scale;
+    ctx.font = fontFor(titleSize);
+    titleLines = wrapText(ctx, mainText, maxWidth);
+  }
+
+  const titleLineHeight = titleSize * 1.15;
+  const artistSize = Math.max(14 * scale, Math.round(titleSize * 0.4));
+  const artistLineHeight = subText ? artistSize * 1.3 : 0;
+  const gap = subText ? 12 * scale : 0;
+  const blockHeight = titleLines.length * titleLineHeight + (subText ? gap + artistLineHeight : 0);
+
+  const centerX = SIZE * (style.posX ?? 50) / 100;
+  const centerY = SIZE * (style.posY ?? 50) / 100;
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+
+  let cursorTop = centerY - blockHeight / 2;
+
+  ctx.font = fontFor(titleSize);
+  ctx.lineWidth = Math.max(2 * scale, titleSize * (style.strokeWidth ?? 0));
+  ctx.strokeStyle = style.strokeColor || '#ffffff';
+  ctx.fillStyle = style.fillColor || '#000000';
+  for (const line of titleLines) {
+    const baselineY = cursorTop + titleLineHeight / 2;
+    if (ctx.lineWidth > 0.5) ctx.strokeText(line, centerX, baselineY);
+    ctx.fillText(line, centerX, baselineY);
+    cursorTop += titleLineHeight;
+  }
+
+  if (subText) {
+    cursorTop += gap;
+    const baselineY = cursorTop + artistLineHeight / 2;
+    ctx.font = fontFor(artistSize);
+    ctx.lineWidth = Math.max(1.5 * scale, artistSize * (style.strokeWidth ?? 0) * 0.9);
+    if (ctx.lineWidth > 0.5) ctx.strokeText(subText, centerX, baselineY);
+    ctx.fillText(subText, centerX, baselineY);
+  }
+}
+
+/* ─── Canvas: render final tierlist card ─────────────────────
+   Full 1:1 square — the thumbnail fills the entire card, and the
+   styled title/artist text is drawn on top using the shared
+   drawTierlistText() so downloads always match the style preview. */
 async function renderTierlistBlob(item, quality) {
   const { vid } = item;
   const usingCustom = !!item.customImage;
@@ -849,69 +1128,8 @@ async function renderTierlistBlob(item, quality) {
       canvas.width = SIZE;
       canvas.height = SIZE;
       const ctx = canvas.getContext('2d');
-
-      // Cover-crop the thumbnail to fill the entire square — nothing is cut
-      // off into a separate strip, the whole card is a true 1:1 image.
-      const side = Math.min(img.width, img.height);
-      const sx = (img.width - side) / 2;
-      const sy = (img.height - side) / 2;
-      ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
-
-      const effectiveType = getItemType(item);
-      const mainText = getItemEditableTitle(item) || item.title || '';
-      const subText  = effectiveType === 'song' ? getItemEditableArtist(item) : '';
-
-      const maxWidth = SIZE - 56;
-      const maxBlockHeight = SIZE - 64;
-
-      // Auto-fit: shrink the title font until it wraps to at most 3 lines
-      // and the whole text block fits comfortably inside the square.
-      let titleSize = 52;
-      let titleLines = [mainText];
-      let titleLineHeight = titleSize * 1.15;
-      let artistSize = 0;
-
-      while (titleSize >= 18) {
-        ctx.font = `800 ${titleSize}px "Segoe UI", system-ui, sans-serif`;
-        titleLines = wrapText(ctx, mainText, maxWidth);
-        titleLineHeight = titleSize * 1.15;
-        artistSize = Math.max(15, Math.round(titleSize * 0.4));
-        const artistBlock = subText ? artistSize * 1.3 + 12 : 0;
-        const totalHeight = titleLines.length * titleLineHeight + artistBlock;
-        if (titleLines.length <= 3 && totalHeight <= maxBlockHeight) break;
-        titleSize -= 2;
-      }
-
-      const artistLineHeight = subText ? artistSize * 1.3 : 0;
-      const gap = subText ? 12 : 0;
-      const blockHeight = (titleLines.length * titleLineHeight) + (subText ? gap + artistLineHeight : 0);
-
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.lineJoin = 'round';
-
-      let cursorTop = SIZE / 2 - blockHeight / 2;
-
-      ctx.font = `800 ${titleSize}px "Segoe UI", system-ui, sans-serif`;
-      ctx.lineWidth = Math.max(5, titleSize * 0.15);
-      ctx.strokeStyle = '#ffffff';
-      ctx.fillStyle = '#000000';
-      for (const line of titleLines) {
-        const baselineY = cursorTop + titleLineHeight / 2;
-        ctx.strokeText(line, SIZE / 2, baselineY);
-        ctx.fillText(line, SIZE / 2, baselineY);
-        cursorTop += titleLineHeight;
-      }
-
-      if (subText) {
-        cursorTop += gap;
-        const baselineY = cursorTop + artistLineHeight / 2;
-        ctx.font = `700 ${artistSize}px "Segoe UI", system-ui, sans-serif`;
-        ctx.lineWidth = Math.max(4, artistSize * 0.18);
-        ctx.strokeText(subText, SIZE / 2, baselineY);
-        ctx.fillText(subText, SIZE / 2, baselineY);
-      }
-
+      drawCoverImage(ctx, img, SIZE);
+      drawTierlistText(ctx, SIZE, item, textStyle);
       canvas.toBlob(resolve, 'image/png');
     };
     img.onerror = () => {
@@ -960,6 +1178,131 @@ async function downloadZip() {
   triggerDownload(URL.createObjectURL(zipBlob), 'thumbnails.zip');
   label.textContent = 'Done!';
 }
+
+/* ─── Text style editor (modal + live draggable preview) ───── */
+const SAMPLE_PREVIEW_ITEM = {
+  vid: 'sample',
+  title: 'Sample Song Title',
+  parsed: { type: 'song', displayTitle: 'Sample Song Title', artist: 'Sample Artist' }
+};
+
+let styleModalContext = 'single';
+let previewImg = null;
+let previewDragWired = false;
+
+function getPreviewItem() {
+  if (styleModalContext === 'single' && singleMeta) return singleMeta;
+  if (styleModalContext === 'batch' && batchItems.length) return batchItems[0];
+  return singleMeta || batchItems[0] || null;
+}
+function previewImageSrc(item) {
+  if (!item || item.vid === 'sample') return null;
+  if (item.customImage) return item.customImage;
+  const q = item === singleMeta ? currentQuality : getItemQuality(item);
+  return thumbUrl(item.vid, q);
+}
+
+function openStyleModal(context) {
+  styleModalContext = context;
+  document.getElementById('style-modal').classList.add('open');
+  syncStyleControls();
+  loadPreviewImage();
+  if (!previewDragWired) {
+    wirePreviewDrag(document.getElementById('style-preview-canvas'));
+    previewDragWired = true;
+  }
+}
+function closeStyleModal() {
+  document.getElementById('style-modal').classList.remove('open');
+}
+
+function syncStyleControls() {
+  document.getElementById('style-font').value = textStyle.fontFamily;
+  document.getElementById('style-bold').checked = textStyle.bold;
+  document.getElementById('style-italic').checked = textStyle.italic;
+  document.getElementById('style-uppercase').checked = textStyle.uppercase;
+  document.getElementById('style-autosize').checked = textStyle.autoSize;
+  document.getElementById('style-size').disabled = textStyle.autoSize;
+  document.getElementById('style-size').value = textStyle.fontSize;
+  document.getElementById('style-fill').value = textStyle.fillColor;
+  document.getElementById('style-stroke').value = textStyle.strokeColor;
+  document.getElementById('style-strokewidth').value = textStyle.strokeWidth;
+}
+
+function updateStyle() {
+  textStyle.fontFamily = document.getElementById('style-font').value;
+  textStyle.bold = document.getElementById('style-bold').checked;
+  textStyle.italic = document.getElementById('style-italic').checked;
+  textStyle.uppercase = document.getElementById('style-uppercase').checked;
+  textStyle.autoSize = document.getElementById('style-autosize').checked;
+  document.getElementById('style-size').disabled = textStyle.autoSize;
+  textStyle.fontSize = parseInt(document.getElementById('style-size').value, 10) || 52;
+  textStyle.fillColor = document.getElementById('style-fill').value;
+  textStyle.strokeColor = document.getElementById('style-stroke').value;
+  textStyle.strokeWidth = parseFloat(document.getElementById('style-strokewidth').value);
+  redrawPreview();
+}
+
+function resetStylePosition() {
+  textStyle.posX = 50;
+  textStyle.posY = 50;
+  redrawPreview();
+}
+
+function loadPreviewImage() {
+  previewImg = null;
+  redrawPreview();
+  const item = getPreviewItem();
+  const src = previewImageSrc(item);
+  if (!src) return;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => { previewImg = img; redrawPreview(); };
+  img.onerror = () => { previewImg = null; redrawPreview(); };
+  img.src = src;
+}
+
+function redrawPreview() {
+  const canvas = document.getElementById('style-preview-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const SIZE = canvas.width;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  if (previewImg) {
+    drawCoverImage(ctx, previewImg, SIZE);
+  } else {
+    const grad = ctx.createLinearGradient(0, 0, SIZE, SIZE);
+    grad.addColorStop(0, '#333'); grad.addColorStop(1, '#181818');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, SIZE, SIZE);
+  }
+  const item = getPreviewItem() || SAMPLE_PREVIEW_ITEM;
+  drawTierlistText(ctx, SIZE, item, textStyle);
+}
+
+function wirePreviewDrag(canvas) {
+  if (!canvas) return;
+  let dragging = false;
+  const updateFromEvent = e => {
+    const rect = canvas.getBoundingClientRect();
+    let x = (e.clientX - rect.left) / rect.width * 100;
+    let y = (e.clientY - rect.top) / rect.height * 100;
+    textStyle.posX = Math.min(100, Math.max(0, x));
+    textStyle.posY = Math.min(100, Math.max(0, y));
+    redrawPreview();
+  };
+  canvas.addEventListener('pointerdown', e => {
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    updateFromEvent(e);
+  });
+  canvas.addEventListener('pointermove', e => { if (dragging) updateFromEvent(e); });
+  canvas.addEventListener('pointerup', () => { dragging = false; });
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
+}
+
+/* ─── Init ────────────────────────────────────────────────── */
+renderApiKeyStatus();
 </script>
 </body>
 </html>
