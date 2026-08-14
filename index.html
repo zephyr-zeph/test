@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YouTube Thumbnail Downloader</title>
+<title>Tierlist Automator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,6 +30,7 @@ header p { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
 
 .section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 1.25rem 0 0.6rem; }
 .section-label:first-child { margin-top: 0; }
+.or-divider { text-align: center; color: var(--muted); font-size: 0.7rem; margin: 10px 0; text-transform: uppercase; letter-spacing: 0.08em; }
 
 .input-group { display: flex; gap: 8px; margin-bottom: 0.5rem; }
 input[type="text"], input[type="password"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 11px 14px; font-size: 0.875rem; outline: none; transition: border-color 0.15s; width: 100%; }
@@ -72,6 +73,7 @@ button.secondary.sm-btn { padding: 7px 12px; font-size: 0.78rem; }
 .type-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; margin-top: 5px; }
 .badge-song { background: rgba(99,179,237,0.12); color: #63b3ed; border: 1px solid rgba(99,179,237,0.25); }
 .badge-video { background: rgba(154,205,50,0.1); color: #9acd32; border: 1px solid rgba(154,205,50,0.2); }
+.badge-image { background: rgba(230,180,60,0.12); color: #e6b43c; border: 1px solid rgba(230,180,60,0.25); }
 .btn-group { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 button.dl-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); padding: 8px 14px; font-size: 0.82rem; font-weight: 500; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
 button.dl-btn:hover { background: #2e2e2e; }
@@ -130,10 +132,10 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .type-btn { border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; transition: all 0.15s; }
 .type-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 
-/* Text style modal */
+/* Text/card style modal */
 .style-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
 .style-modal-backdrop.open { display: flex; }
-.style-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); max-width: 660px; width: 100%; max-height: 90vh; overflow-y: auto; }
+.style-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; }
 .style-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .style-modal-header h3 { font-size: 1rem; font-weight: 700; }
 .style-close { background: transparent; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 4px; }
@@ -152,7 +154,15 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 .style-checkline { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text); font-weight: 500; text-transform: none; letter-spacing: normal; }
 .style-color-row { display: flex; gap: 10px; }
 .style-color-row .field { flex: 1; }
-.style-modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--border); }
+.style-modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.layer-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.layer-tab { position: relative; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.layer-tab:hover { border-color: var(--border2); }
+.layer-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.layer-tab.add-layer { color: var(--muted); border-style: dashed; }
+.layer-tab.add-layer:hover { color: var(--text); }
+.layer-tab-x { margin-left: 6px; opacity: 0.7; }
+.layer-tab-x:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -160,24 +170,28 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 
 <header>
   <div class="logo">
-    <svg viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
   </div>
   <div>
-    <h1>YouTube Thumbnail Downloader</h1>
-    <p>Download thumbnails from single videos or a custom batch</p>
+    <h1>Tierlist Automator</h1>
+    <p>Turn YouTube videos or your own images into styled tierlist cards</p>
   </div>
 </header>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('single')">Single Video</button>
-  <button class="tab" onclick="switchTab('batch')">Batch (ZIP)</button>
+  <button class="tab active" onclick="switchTab('single')">Single Item</button>
+  <button class="tab" onclick="switchTab('batch')" id="batch-tab-btn">Batch (ZIP)</button>
 </div>
 
-<!-- SINGLE VIDEO -->
+<!-- SINGLE ITEM -->
 <div class="panel active" id="panel-single">
   <div class="input-group">
     <input type="text" id="video-url" placeholder="Paste YouTube video URL or ID…" onkeydown="if(event.key==='Enter')fetchSingle()" />
     <button class="primary" onclick="fetchSingle()">Fetch</button>
+  </div>
+  <div class="or-divider">or</div>
+  <div class="input-group">
+    <button class="secondary" style="width:100%" onclick="document.getElementById('single-plain-img-input').click()">🖼 Use your own image instead</button>
   </div>
   <div class="controls-row">
     <div class="quality-row" id="quality-row">
@@ -187,7 +201,7 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
       <button class="quality-btn" data-q="mqdefault" onclick="setQuality(this)">MQ (320×180)</button>
     </div>
     <div class="right-controls">
-      <button class="secondary sm-btn" onclick="openStyleModal('single')">✎ Text style</button>
+      <button class="secondary sm-btn" onclick="openStyleModal('single')">✎ Card style</button>
       <div class="tierlist-toggle">
         <span>Tierlist mode</span>
         <label class="toggle-switch">
@@ -204,16 +218,21 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 <!-- BATCH -->
 <div class="panel" id="panel-batch">
   <div class="api-note">
-    Add videos one at a time — no key required — or import a whole playlist at once with a
+    Add YouTube videos one at a time, upload your own images, or import a whole playlist at once with a
     <strong>YouTube Data API v3 key</strong> (free). Get one at
     <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> →
-    Enable <em>YouTube Data API v3</em> → Create credentials → API key. Everything you add lands in the same batch below.
+    Enable <em>YouTube Data API v3</em> → Create credentials → API key. Everything lands in the same batch below.
   </div>
 
-  <div class="section-label">Add a single video</div>
+  <div class="section-label">Add a video</div>
   <div class="input-group">
     <input type="text" id="batch-add-url" placeholder="Paste YouTube video URL or ID…" onkeydown="if(event.key==='Enter')addVideoToBatch()" />
     <button class="primary" onclick="addVideoToBatch()">Add</button>
+  </div>
+
+  <div class="section-label">Add images</div>
+  <div class="input-group">
+    <button class="secondary" style="width:100%" onclick="document.getElementById('batch-plain-img-input').click()">🖼 Upload image(s) to the batch</button>
   </div>
 
   <div class="section-label">Import a playlist</div>
@@ -235,7 +254,7 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
       <button class="quality-btn" data-q="mqdefault" onclick="setPlQuality(this)">MQ</button>
     </div>
     <div class="right-controls">
-      <button class="secondary sm-btn" onclick="openStyleModal('batch')">✎ Text style</button>
+      <button class="secondary sm-btn" onclick="openStyleModal('batch')">✎ Card style</button>
       <div class="tierlist-toggle">
         <span>Tierlist mode</span>
         <label class="toggle-switch">
@@ -254,53 +273,32 @@ button.dl-btn.sm { font-size: 0.75rem; padding: 6px 10px; }
 
 <input type="file" id="single-img-input" accept="image/*" style="display:none" onchange="onSingleImageChange(event)" />
 <input type="file" id="batch-img-input" accept="image/*" style="display:none" onchange="onBatchImageChange(event)" />
+<input type="file" id="single-plain-img-input" accept="image/*" style="display:none" onchange="onSinglePlainImage(event)" />
+<input type="file" id="batch-plain-img-input" accept="image/*" multiple style="display:none" onchange="onBatchPlainImages(event)" />
+<input type="file" id="extra-img-input" accept="image/*" style="display:none" onchange="onExtraImageChosen(event)" />
+<input type="file" id="style-import-input" accept="application/json" style="display:none" onchange="onImportCardStyle(event)" />
 
-<!-- Text style editor -->
+<!-- Card style editor -->
 <div class="style-modal-backdrop" id="style-modal">
   <div class="style-modal">
     <div class="style-modal-header">
-      <h3>Tierlist Text Style</h3>
+      <h3>Tierlist Card Style</h3>
       <button class="style-close" onclick="closeStyleModal()">×</button>
     </div>
     <div class="style-modal-body">
       <div class="style-preview-wrap">
         <canvas id="style-preview-canvas" width="320" height="320"></canvas>
-        <div class="style-hint">Drag the text on the preview to reposition it. This style applies to every tierlist card.</div>
+        <div class="style-hint">Drag the selected layer to reposition it. Pick a layer below to edit it — title, creator, or any shape/image you add.</div>
       </div>
       <div class="style-controls">
-        <label class="field">Font
-          <select id="style-font" onchange="updateStyle()">
-            <option value='"Segoe UI", system-ui, sans-serif'>Segoe UI (default)</option>
-            <option value='Impact, "Arial Narrow Bold", sans-serif'>Impact</option>
-            <option value='"Arial Black", Arial, sans-serif'>Arial Black</option>
-            <option value='Georgia, serif'>Georgia</option>
-            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
-            <option value='Verdana, Geneva, sans-serif'>Verdana</option>
-            <option value='"Trebuchet MS", sans-serif'>Trebuchet MS</option>
-            <option value='"Courier New", monospace'>Courier New</option>
-            <option value='"Comic Sans MS", "Comic Sans", cursive'>Comic Sans MS</option>
-          </select>
-        </label>
-        <div class="style-row">
-          <label class="style-checkline"><input type="checkbox" id="style-bold" checked onchange="updateStyle()"> Bold</label>
-          <label class="style-checkline"><input type="checkbox" id="style-italic" onchange="updateStyle()"> Italic</label>
-          <label class="style-checkline"><input type="checkbox" id="style-uppercase" onchange="updateStyle()"> UPPERCASE</label>
-        </div>
-        <label class="field">
-          <span class="style-checkline"><input type="checkbox" id="style-autosize" checked onchange="updateStyle()"> Auto-fit size</span>
-          <input type="range" id="style-size" min="16" max="100" value="52" oninput="updateStyle()" disabled />
-        </label>
-        <div class="style-color-row">
-          <label class="field">Text color <input type="color" id="style-fill" value="#000000" onchange="updateStyle()"></label>
-          <label class="field">Stroke color <input type="color" id="style-stroke" value="#ffffff" onchange="updateStyle()"></label>
-        </div>
-        <label class="field">Stroke width
-          <input type="range" id="style-strokewidth" min="0" max="0.3" step="0.01" value="0.15" oninput="updateStyle()" />
-        </label>
-        <button class="secondary sm-btn" onclick="resetStylePosition()">Center text</button>
+        <div class="layer-tabs" id="layer-tabs"></div>
+        <div id="layer-controls"></div>
       </div>
     </div>
     <div class="style-modal-footer">
+      <button class="secondary sm-btn" onclick="exportCardStyle()">Export style file</button>
+      <button class="secondary sm-btn" onclick="triggerImportCardStyle()">Import style file</button>
+      <button class="secondary sm-btn" onclick="resetCardStyle()">Reset all</button>
       <button class="primary" onclick="closeStyleModal()">Done</button>
     </div>
   </div>
@@ -313,21 +311,81 @@ let plQuality      = 'maxresdefault';   // batch quality
 let batchItems     = [];
 let singleMeta     = null;
 
-/* Global tierlist text style, shared by the single-video and batch
-   tierlist card renderers so every card in a set looks consistent. */
-let textStyle = {
-  fontFamily: '"Segoe UI", system-ui, sans-serif',
-  bold: true,
-  italic: false,
-  uppercase: false,
-  autoSize: true,
-  fontSize: 52,       // used only when autoSize is false (reference size at a 500px canvas)
-  fillColor: '#000000',
-  strokeColor: '#ffffff',
-  strokeWidth: 0.15,  // fraction of font size
-  posX: 50,           // percent
-  posY: 50            // percent
-};
+const FONT_OPTIONS = [
+  { label: 'Segoe UI (default)', value: '"Segoe UI", system-ui, sans-serif' },
+  { label: 'Impact', value: 'Impact, "Arial Narrow Bold", sans-serif' },
+  { label: 'Arial Black', value: '"Arial Black", Arial, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Times New Roman', value: '"Times New Roman", Times, serif' },
+  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+  { label: 'Trebuchet MS', value: '"Trebuchet MS", sans-serif' },
+  { label: 'Courier New', value: '"Courier New", monospace' },
+  { label: 'Comic Sans MS', value: '"Comic Sans MS", "Comic Sans", cursive' },
+];
+
+/* Card style: independent Title / Creator text layers, plus any number
+   of extra shape/image layers. Persisted to localStorage so it survives
+   reloads; exportable to a JSON file as a backup in case storage clears. */
+function defaultCardStyle() {
+  return {
+    title:  { fontFamily: FONT_OPTIONS[0].value, bold: true, italic: false, uppercase: false, autoSize: true, fontSize: 52, fillColor: '#000000', strokeColor: '#ffffff', strokeWidth: 0.15, posX: 50, posY: 42 },
+    artist: { fontFamily: FONT_OPTIONS[0].value, bold: true, italic: false, uppercase: false, autoSize: true, fontSize: 26, fillColor: '#000000', strokeColor: '#ffffff', strokeWidth: 0.14, posX: 50, posY: 60 },
+    extras: []
+  };
+}
+function normalizeCardStyle(obj) {
+  const base = defaultCardStyle();
+  const extras = Array.isArray(obj?.extras)
+    ? obj.extras.filter(x => x && x.id && (x.type === 'rect' || x.type === 'circle' || x.type === 'image'))
+    : [];
+  return {
+    title: { ...base.title, ...(obj?.title || {}) },
+    artist: { ...base.artist, ...(obj?.artist || {}) },
+    extras
+  };
+}
+const CARD_STYLE_STORAGE_KEY = 'tierlistAutomator_cardStyle';
+function saveCardStyle() {
+  try { localStorage.setItem(CARD_STYLE_STORAGE_KEY, JSON.stringify(cardStyle)); } catch { /* storage unavailable */ }
+}
+function loadCardStyleFromStorage() {
+  try {
+    const raw = localStorage.getItem(CARD_STYLE_STORAGE_KEY);
+    if (raw) return normalizeCardStyle(JSON.parse(raw));
+  } catch { /* ignore corrupt/unavailable storage */ }
+  return defaultCardStyle();
+}
+let cardStyle = loadCardStyleFromStorage();
+let selectedLayer = 'title'; // 'title' | 'artist' | an extra layer's id
+let extraImageCache = {};    // extra.id -> loaded HTMLImageElement
+
+/* ─── UI preference persistence (quality + tierlist toggles) ─ */
+const UI_PREFS_KEY = 'tierlistAutomator_uiPrefs';
+function saveUiPrefs() {
+  try {
+    localStorage.setItem(UI_PREFS_KEY, JSON.stringify({
+      quality: currentQuality, plQuality,
+      tlSingle: isTlSingle(), tlBatch: isTlPlaylist()
+    }));
+  } catch { /* ignore */ }
+}
+function loadUiPrefs() {
+  try {
+    const raw = localStorage.getItem(UI_PREFS_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p.quality) {
+      currentQuality = p.quality;
+      document.querySelectorAll('#quality-row .quality-btn').forEach(b => b.classList.toggle('active', b.dataset.q === p.quality));
+    }
+    if (p.plQuality) {
+      plQuality = p.plQuality;
+      document.querySelectorAll('#pl-quality-row .quality-btn').forEach(b => b.classList.toggle('active', b.dataset.q === p.plQuality));
+    }
+    if (p.tlSingle) document.getElementById('tl-single').checked = true;
+    if (p.tlBatch) document.getElementById('tl-playlist').checked = true;
+  } catch { /* ignore */ }
+}
 
 /* ─── Tab switching ───────────────────────────────────────── */
 function switchTab(tab) {
@@ -340,24 +398,26 @@ function switchTab(tab) {
 function isTlSingle()   { return document.getElementById('tl-single').checked; }
 function isTlPlaylist() { return document.getElementById('tl-playlist').checked; }
 
-function onSingleTlToggle() { if (singleMeta) renderSingleCard(singleMeta); }
-function onPlTlToggle()     { if (batchItems.length) renderBatchGrid(batchItems); }
+function onSingleTlToggle() { saveUiPrefs(); if (singleMeta) renderSingleCard(singleMeta); }
+function onPlTlToggle()     { saveUiPrefs(); if (batchItems.length) renderBatchGrid(batchItems); }
 
 /* ─── Quality selectors ───────────────────────────────────── */
 function setQuality(btn) {
   document.querySelectorAll('#quality-row .quality-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentQuality = btn.dataset.q;
+  saveUiPrefs();
   if (singleMeta) renderSingleCard(singleMeta);
 }
 function setPlQuality(btn) {
   document.querySelectorAll('#pl-quality-row .quality-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   plQuality = btn.dataset.q;
+  saveUiPrefs();
   if (batchItems.length) renderBatchGrid(batchItems);
 }
 
-/* ─── URL extractors ──────────────────────────────────────── */
+/* ─── ID / URL helpers ────────────────────────────────────── */
 function extractVideoId(url) {
   if (!url) return null;
   for (const p of [/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/, /^([A-Za-z0-9_-]{11})$/]) {
@@ -372,6 +432,12 @@ function extractPlaylistId(url) {
   return /^[A-Za-z0-9_-]{10,}$/.test(url) ? url : null;
 }
 function thumbUrl(vid, q) { return `https://img.youtube.com/vi/${vid}/${q}.jpg`; }
+function genId() { return 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function cleanFilenameForTitle(filename) {
+  const noExt = (filename || '').replace(/\.[a-z0-9]+$/i, '');
+  const cleaned = noExt.replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return cleaned || 'Untitled Image';
+}
 
 /* ─── Status helpers ──────────────────────────────────────── */
 function setStatus(id, msg, type = '') {
@@ -386,14 +452,14 @@ function escHtml(s) {
   if (!s) return '';
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function normalizeEditableText(text) {
   return (text || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /* These accessors work for both singleMeta and items inside batchItems,
-   since both share the same { title, channel, parsed, editableTitle,
-   editableArtist, manualType, vid, customImage } shape. */
+   whether they came from YouTube or a plain image upload — they share
+   the same { title, channel, parsed, editableTitle, editableArtist,
+   manualType, vid, source, customImage } shape. */
 function getItemEditableTitle(item) {
   return item?.editableTitle ?? item?.parsed?.displayTitle ?? item?.title ?? '';
 }
@@ -437,7 +503,13 @@ function setItemQuality(vid, q) {
 function removeFromBatch(vid) {
   batchItems = batchItems.filter(x => x.vid !== vid);
   renderBatchGrid(batchItems);
-  setStatus('pl-status', `${batchItems.length} video${batchItems.length === 1 ? '' : 's'} in batch.`);
+  updateBatchTabBadge();
+  setStatus('pl-status', `${batchItems.length} item${batchItems.length === 1 ? '' : 's'} in batch.`);
+}
+
+function updateBatchTabBadge() {
+  const btn = document.getElementById('batch-tab-btn');
+  btn.textContent = batchItems.length ? `Batch (ZIP) · ${batchItems.length}` : 'Batch (ZIP)';
 }
 
 function stopEditableEnter(e) {
@@ -448,21 +520,20 @@ function stopEditableEnter(e) {
 }
 
 /* ─── API key storage ─────────────────────────────────────────
-   Stored locally in this browser (localStorage) instead of sitting
-   in a plaintext field every time. Nothing is sent anywhere except
-   directly to Google's API when you import a playlist. If localStorage
-   isn't available (e.g. a sandboxed preview), it just falls back to
-   holding the key in memory for this session. */
-const API_KEY_STORAGE_KEY = 'ytThumbDownloader_apiKey';
+   Stored locally in this browser (localStorage) instead of sitting in a
+   plaintext field every time, and never baked into the file itself —
+   anyone who opened the page's source could read a hardcoded key. If
+   localStorage isn't available (e.g. a sandboxed preview) it falls back
+   to holding the key in memory for just this session. */
+const API_KEY_STORAGE_KEY = 'tierlistAutomator_apiKey';
 let sessionApiKey = '';
 function getApiKey() {
-  try {
-    return localStorage.getItem(API_KEY_STORAGE_KEY) || '';
-  } catch { return sessionApiKey; }
+  try { return localStorage.getItem(API_KEY_STORAGE_KEY) || ''; }
+  catch { return sessionApiKey; }
 }
 function setApiKey(key) {
   sessionApiKey = key;
-  try { localStorage.setItem(API_KEY_STORAGE_KEY, key); } catch { /* fall back to in-memory only */ }
+  try { localStorage.setItem(API_KEY_STORAGE_KEY, key); } catch { /* in-memory only */ }
 }
 function renderApiKeyStatus() {
   const key = getApiKey();
@@ -493,15 +564,22 @@ function clearApiKey() {
   setStatus('pl-status', 'API key removed.');
 }
 
-/* ─── Custom image uploads (file picker or drag-and-drop) ────
-   Lets you swap in your own image if the fetched YouTube thumbnail
-   is wrong, missing, or just not what you want. */
+/* ─── File / image utilities ─────────────────────────────── */
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
+  });
+}
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
   });
 }
 async function dataUrlToBlob(dataUrl) {
@@ -529,7 +607,7 @@ function sanitizeFilename(s) {
   return (s || '').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
 }
 function filenameBase(item, tierlist) {
-  if (!item) return 'thumbnail';
+  if (!item) return 'image';
   const title  = tierlist ? getItemEditableTitle(item) : (item.title || getItemEditableTitle(item));
   const type   = tierlist ? getItemType(item) : (item.parsed?.type || 'video');
   const artist = tierlist && type === 'song' ? getItemEditableArtist(item) : null;
@@ -539,38 +617,27 @@ function filenameBase(item, tierlist) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PATTERN-BASED TITLE PARSER
+   PATTERN-BASED TITLE PARSER (for YouTube titles)
    ═══════════════════════════════════════════════════════════
-
    Signals that suggest it's a SONG:
    • Channel name ends with " - Topic"  (YouTube auto-generated)
    • Title matches "Artist - Song" dash pattern
    • Title contains music keywords: (Official Video), (Lyric Video),
      (Official Audio), (Music Video), (Official MV), (Visualizer),
      [Official Video], MV, M/V, (prod. ...), ft., feat.
-   • Title ends with common music suffixes
-
-   If identified as a song we:
-   1. Try to split on " - " to get artist / song
-   2. Strip suffix noise from the song name
-   3. Clean up featured artists from song name into artist string
+   If identified as a song we split on " - " to get artist / song,
+   strip suffix noise, and fold featured artists into the artist string.
 */
-
 const MUSIC_SUFFIX_RE = /[\s[(]+(?:official\s*(?:music\s*)?video|official\s*audio|official\s*mv|lyric(?:s)?\s*video|lyrics?|audio|visualizer|music\s*video|animated\s*video|full\s*video|hd|4k|mv|m\/v|performance\s*video|live\s*version|live\s*session|acoustic\s*version|cover\s*video|piano\s*version|guitar\s*cover|radio\s*edit|extended\s*mix|club\s*mix|remix(?:\s*video)?|slowed(?:\s*[\+&]\s*reverb)?|nightcore|sped\s*up|bass\s*boosted|explicit|clean|version|ver\.?|with\s*lyrics?|w\/\s*lyrics?|out\s*now|available\s*now|\d{4})[^\w]*/gi;
-
 const FEAT_RE = /\s*[\[(]?\s*(?:ft\.?|feat\.?|featuring|with)\s+([^\])]+?)[\])]?\s*$/i;
 const PROD_RE = /\s*[\[(]\s*prod\.?\s*(?:by\s*)?[^\])]+[\])]/gi;
 
-function isMusicChannel(channel) {
-  return channel && / - Topic$/i.test(channel);
-}
-
+function isMusicChannel(channel) { return channel && / - Topic$/i.test(channel); }
 function hasMusicKeywords(title) {
   return /\b(?:official\s+(?:music\s+)?video|official\s+audio|lyric(?:s)?\s+video|lyrics?|visualizer|music\s+video|official\s+mv|m\/v\b|mv\b)/i.test(title)
     || /[\[(](?:ft\.?|feat\.?|featuring|prod\.)/i.test(title)
     || /\s(?:ft\.?|feat\.?)\s/i.test(title);
 }
-
 function cleanSongName(raw) {
   let s = raw.trim();
   s = s.replace(PROD_RE, '');
@@ -580,25 +647,18 @@ function cleanSongName(raw) {
   s = s.replace(/[:\-–—|]+\s*$/, '').trim();
   return s || raw.trim();
 }
-
-function cleanArtistName(raw) {
-  return raw.replace(/ - Topic$/i, '').trim();
-}
-
+function cleanArtistName(raw) { return raw.replace(/ - Topic$/i, '').trim(); }
 function parseFeatFromTitle(title) {
   const m = title.match(/\s*[\[(]?\s*(?:ft\.?|feat\.?|featuring|with)\s+([^\])[,]+?)[\])]?\s*(?:$|[\[(])/i);
   return m ? m[1].trim() : null;
 }
-
 function parseTitle(title, channel) {
   const isTopicChannel = isMusicChannel(channel);
   const hasKeywords    = hasMusicKeywords(title);
   const dashMatch      = title.match(/^(.+?)\s+[-–—]\s+(.+)$/);
   const looksLikeSong  = isTopicChannel || hasKeywords || (dashMatch && hasKeywords);
 
-  if (!looksLikeSong) {
-    return { type: 'video', displayTitle: title, artist: null };
-  }
+  if (!looksLikeSong) return { type: 'video', displayTitle: title, artist: null };
 
   let artist = null;
   let songName = title;
@@ -609,13 +669,10 @@ function parseTitle(title, channel) {
   } else if (dashMatch) {
     let rawArtist = dashMatch[1].trim();
     let rawSong   = dashMatch[2].trim();
-
     const cleanedRight = cleanSongName(rawSong);
     const cleanedLeft  = cleanSongName(rawArtist);
-
     artist   = cleanedLeft;
     songName = cleanedRight;
-
     const feat = parseFeatFromTitle(rawSong) || parseFeatFromTitle(rawArtist);
     if (feat) artist += ` ft. ${feat}`;
   } else {
@@ -623,11 +680,7 @@ function parseTitle(title, channel) {
     songName = cleanSongName(title);
   }
 
-  return {
-    type: 'song',
-    displayTitle: songName || title,
-    artist: artist || null
-  };
+  return { type: 'song', displayTitle: songName || title, artist: artist || null };
 }
 
 /* ─── oEmbed fetch (free, no API key) ────────────────────── */
@@ -640,7 +693,7 @@ async function fetchOEmbed(vid) {
   } catch { return null; }
 }
 
-/* ─── Single video ────────────────────────────────────────── */
+/* ─── Single item: YouTube fetch ─────────────────────────── */
 async function fetchSingle() {
   const raw = document.getElementById('video-url').value.trim();
   const vid = extractVideoId(raw);
@@ -653,7 +706,23 @@ async function fetchSingle() {
   const oEmbed = await fetchOEmbed(vid);
   const title   = oEmbed?.title   || `Video ${vid}`;
   const channel = oEmbed?.channel || null;
-  singleMeta = { vid, title, channel, parsed: parseTitle(title, channel) };
+  singleMeta = { vid, source: 'youtube', title, channel, parsed: parseTitle(title, channel) };
+  setStatus('single-status', '');
+  renderSingleCard(singleMeta);
+}
+
+/* ─── Single item: plain image ───────────────────────────── */
+async function onSinglePlainImage(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const dataUrl = await readFileAsDataUrl(file);
+  const name = cleanFilenameForTitle(file.name);
+  singleMeta = {
+    vid: genId(), source: 'image', title: name, channel: null,
+    parsed: { type: 'video', displayTitle: name, artist: null },
+    customImage: dataUrl
+  };
   setStatus('single-status', '');
   renderSingleCard(singleMeta);
 }
@@ -661,6 +730,7 @@ async function fetchSingle() {
 function renderSingleCard(meta) {
   const { vid, title } = meta;
   const tierlist = isTlSingle();
+  const isImageSource = meta.source === 'image';
   const url = thumbUrl(vid, currentQuality);
   const effectiveType = getSingleType();
 
@@ -674,11 +744,11 @@ function renderSingleCard(meta) {
       artistLine = `<div class="vid-artist editable-text" contenteditable="true" spellcheck="false" onblur="commitSingleEdit('artist', this.innerText)" onkeydown="stopEditableEnter(event)">${artistText}</div>`;
       badgeHtml = `<span class="type-badge badge-song">♪ Song</span>`;
     } else {
-      badgeHtml = `<span class="type-badge badge-video">▶ Video</span>`;
+      badgeHtml = isImageSource ? `<span class="type-badge badge-image">🖼 Image</span>` : `<span class="type-badge badge-video">▶ Video</span>`;
     }
     typeControls = `
       <div class="type-switch" aria-label="Tierlist type override">
-        <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitSingleEdit('type','video')">Video</button>
+        <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitSingleEdit('type','video')">${isImageSource ? 'Image' : 'Video'}</button>
         <button class="type-btn${effectiveType === 'song' ? ' active' : ''}" onclick="commitSingleEdit('type','song')">Song</button>
       </div>`;
   } else {
@@ -692,7 +762,7 @@ function renderSingleCard(meta) {
           <button class="thumb-edit-btn" title="Upload a custom image" onclick="triggerSingleImagePicker()">
             <svg viewBox="0 0 24 24"><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>
-          ${singleMeta.customImage ? `<button class="thumb-reset-btn" title="Revert to YouTube thumbnail" onclick="resetSingleImage()">
+          ${(!isImageSource && singleMeta.customImage) ? `<button class="thumb-reset-btn" title="Revert to YouTube thumbnail" onclick="resetSingleImage()">
             <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
           </button>` : ''}
         </div>
@@ -704,7 +774,7 @@ function renderSingleCard(meta) {
           ${artistLine}
           ${badgeHtml}
           ${typeControls}
-          <div class="vid-size">${qualityLabel(currentQuality)}</div>
+          <div class="vid-size">${isImageSource ? 'Your image' : qualityLabel(currentQuality)}</div>
         </div>
         <div class="btn-group">
           <button class="dl-btn" onclick="downloadSingle('${vid}','${currentQuality}')">
@@ -737,7 +807,7 @@ async function onSingleImageChange(e) {
   renderSingleCard(singleMeta);
 }
 function resetSingleImage() {
-  if (!singleMeta) return;
+  if (!singleMeta || singleMeta.source === 'image') return;
   delete singleMeta.customImage;
   renderSingleCard(singleMeta);
 }
@@ -745,6 +815,7 @@ function resetSingleImage() {
 function handleThumbError(vid) {
   const img = document.getElementById('thumb-img');
   if (!img) return;
+  if (singleMeta && singleMeta.customImage) return; // a custom/plain image, not a failed YouTube fetch
   const fallbacks = ['sddefault','hqdefault','mqdefault','default'];
   const tried = img.dataset.tried ? img.dataset.tried.split(',') : [];
   const next = fallbacks.find(q => !tried.includes(q) && q !== currentQuality);
@@ -838,10 +909,30 @@ async function addVideoToBatch() {
   const oEmbed = await fetchOEmbed(vid);
   const title   = oEmbed?.title   || `Video ${vid}`;
   const channel = oEmbed?.channel || null;
-  batchItems.push({ vid, title, channel, parsed: parseTitle(title, channel) });
+  batchItems.push({ vid, source: 'youtube', title, channel, parsed: parseTitle(title, channel) });
   input.value = '';
-  setStatus('pl-status', `${batchItems.length} video${batchItems.length === 1 ? '' : 's'} in batch.`, 'success');
+  setStatus('pl-status', `${batchItems.length} item${batchItems.length === 1 ? '' : 's'} in batch.`, 'success');
   renderBatchGrid(batchItems);
+  updateBatchTabBadge();
+}
+
+/* ─── Batch: add plain images ────────────────────────────── */
+async function onBatchPlainImages(e) {
+  const files = [...e.target.files];
+  e.target.value = '';
+  if (!files.length) return;
+  for (const file of files) {
+    const dataUrl = await readFileAsDataUrl(file);
+    const name = cleanFilenameForTitle(file.name);
+    batchItems.push({
+      vid: genId(), source: 'image', title: name, channel: null,
+      parsed: { type: 'video', displayTitle: name, artist: null },
+      customImage: dataUrl
+    });
+  }
+  setStatus('pl-status', `${batchItems.length} item${batchItems.length === 1 ? '' : 's'} in batch.`, 'success');
+  renderBatchGrid(batchItems);
+  updateBatchTabBadge();
 }
 
 /* ─── Batch: import a playlist (merges into the batch) ───── */
@@ -868,7 +959,7 @@ async function importPlaylist() {
         if (!vid || batchItems.some(x => x.vid === vid)) continue;
         const title   = s.title;
         const channel = s.videoOwnerChannelTitle || null;
-        batchItems.push({ vid, title, channel, parsed: parseTitle(title, channel) });
+        batchItems.push({ vid, source: 'youtube', title, channel, parsed: parseTitle(title, channel) });
         added++;
       }
       nextPage = data.nextPageToken || '';
@@ -877,6 +968,7 @@ async function importPlaylist() {
 
     setStatus('pl-status', `Added ${added} video${added === 1 ? '' : 's'}. ${batchItems.length} total in batch.`, 'success');
     renderBatchGrid(batchItems);
+    updateBatchTabBadge();
   } catch (e) {
     setStatus('pl-status', 'Error: ' + e.message, 'error');
   } finally {
@@ -901,7 +993,7 @@ async function onBatchImageChange(e) {
 }
 function resetBatchImage(vid) {
   const item = batchItems.find(x => x.vid === vid);
-  if (!item) return;
+  if (!item || item.source === 'image') return;
   delete item.customImage;
   renderBatchGrid(batchItems);
 }
@@ -919,6 +1011,7 @@ function handleGridThumbError(img, vid) {
 function clearBatch() {
   batchItems = [];
   renderBatchGrid(batchItems);
+  updateBatchTabBadge();
   setStatus('pl-status', 'Batch cleared.');
 }
 
@@ -938,6 +1031,7 @@ function renderBatchGrid(items) {
 
   for (const item of items) {
     const { vid, title } = item;
+    const isImageSource = item.source === 'image';
     const card = document.createElement('div');
     card.className = 'grid-thumb' + (tierlist ? ' tl' : '');
     const effectiveType = getItemType(item);
@@ -949,10 +1043,10 @@ function renderBatchGrid(items) {
     if (tierlist) {
       badge = effectiveType === 'song'
         ? `<span class="gt-badge badge-song">♪ Song</span>`
-        : `<span class="gt-badge badge-video">▶ Video</span>`;
+        : (isImageSource ? `<span class="gt-badge badge-image">🖼 Image</span>` : `<span class="gt-badge badge-video">▶ Video</span>`);
       typeControls = `
         <div class="type-switch" aria-label="Tierlist type override">
-          <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitBatchEdit('${vid}', 'type', 'video')">Video</button>
+          <button class="type-btn${effectiveType === 'video' ? ' active' : ''}" onclick="commitBatchEdit('${vid}', 'type', 'video')">${isImageSource ? 'Image' : 'Video'}</button>
           <button class="type-btn${effectiveType === 'song' ? ' active' : ''}" onclick="commitBatchEdit('${vid}', 'type', 'song')">Song</button>
         </div>`;
     }
@@ -960,7 +1054,7 @@ function renderBatchGrid(items) {
     const itemQuality = getItemQuality(item);
     const hasCustom = !!item.customImage;
     const imgSrc = item.customImage || thumbUrl(vid, itemQuality);
-    const qualitySelect = hasCustom ? `<div class="gt-custom-note">Custom image</div>` : `
+    const qualitySelect = hasCustom ? `<div class="gt-custom-note">${isImageSource ? 'Your image' : 'Custom image'}</div>` : `
       <select class="qual-select" title="Thumbnail quality for this video" onchange="setItemQuality('${vid}', this.value)">
         <option value="auto" ${!item.qualityOverride ? 'selected' : ''}>Auto (${qualityLabel(plQuality).split(' ')[0]})</option>
         <option value="maxresdefault" ${item.qualityOverride === 'maxresdefault' ? 'selected' : ''}>Max</option>
@@ -974,7 +1068,7 @@ function renderBatchGrid(items) {
       <button class="gt-edit-btn" title="Upload a custom image" onclick="triggerBatchImagePicker('${vid}')">
         <svg viewBox="0 0 24 24"><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       </button>
-      ${hasCustom ? `<button class="gt-reset-btn" title="Revert to YouTube thumbnail" onclick="resetBatchImage('${vid}')">
+      ${(!isImageSource && hasCustom) ? `<button class="gt-reset-btn" title="Revert to YouTube thumbnail" onclick="resetBatchImage('${vid}')">
         <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       </button>` : ''}
       <img src="${imgSrc}" alt="${escHtml(title)}"
@@ -1000,9 +1094,9 @@ function renderBatchGrid(items) {
       <button class="primary" onclick="downloadZip()">Download All as ZIP</button>
       <button class="secondary" onclick="clearBatch()">Clear batch</button>
       <div class="progress-wrap"><div class="progress-bar" id="prog-bar"></div></div>
-      <span class="progress-label" id="prog-label">${items.length} thumbnail${items.length === 1 ? '' : 's'}</span>
+      <span class="progress-label" id="prog-label">${items.length} item${items.length === 1 ? '' : 's'}</span>
     </div>
-    ${tierlist ? '<div class="tl-note">ZIP will contain square tierlist cards (.png) with labels baked in.</div>' : ''}`;
+    ${tierlist ? '<div class="tl-note">ZIP will contain square tierlist cards (.png) with your styling baked in.</div>' : ''}`;
 }
 
 /* ─── Canvas drawing helpers ─────────────────────────────────
@@ -1025,7 +1119,6 @@ function wrapText(ctx, text, maxWidth) {
   lines.push(current);
   return lines.map(l => ctx.measureText(l).width <= maxWidth ? l : truncateCanvas(ctx, l, maxWidth));
 }
-
 function truncateCanvas(ctx, text, maxWidth) {
   if (!text) return '';
   if (ctx.measureText(text).width <= maxWidth) return text;
@@ -1033,7 +1126,6 @@ function truncateCanvas(ctx, text, maxWidth) {
   while (t.length > 1 && ctx.measureText(t + '…').width > maxWidth) t = t.slice(0, -1);
   return t + '…';
 }
-
 function drawCoverImage(ctx, img, SIZE) {
   const side = Math.min(img.width, img.height);
   const sx = (img.width - side) / 2;
@@ -1041,80 +1133,102 @@ function drawCoverImage(ctx, img, SIZE) {
   ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
 }
 
-/* Draws the title (and artist, for songs) centered on `style.posX/posY`
+/* Draws one text layer (title or artist) centered on layer.posX/posY
    (percent of SIZE), auto-shrinking to fit unless a manual size is set. */
-function drawTierlistText(ctx, SIZE, item, style) {
+function drawTextLayer(ctx, SIZE, text, layer) {
+  if (!text) return;
   const scale = SIZE / 500;
-  const effectiveType = getItemType(item);
-  let mainText = getItemEditableTitle(item) || item.title || '';
-  let subText  = effectiveType === 'song' ? (getItemEditableArtist(item) || '') : '';
-  if (style.uppercase) { mainText = mainText.toUpperCase(); subText = subText.toUpperCase(); }
-  if (!mainText) return;
+  const displayText = layer.uppercase ? text.toUpperCase() : text;
+  const maxWidth = SIZE - 40 * scale;
+  const weight = layer.bold === false ? 500 : 800;
+  const italicPrefix = layer.italic ? 'italic ' : '';
+  const fontFor = size => `${italicPrefix}${weight} ${Math.max(1, size)}px ${layer.fontFamily}`;
 
-  const maxWidth = SIZE - 56 * scale;
-  const weight = style.bold === false ? 500 : 800;
-  const italicPrefix = style.italic ? 'italic ' : '';
-  const fontFor = size => `${italicPrefix}${weight} ${Math.max(1, size)}px ${style.fontFamily}`;
-
-  let titleSize, titleLines;
-  if (style.autoSize) {
-    titleSize = 52 * scale;
-    const maxBlockHeight = SIZE - 64 * scale;
-    while (titleSize >= 16 * scale) {
-      ctx.font = fontFor(titleSize);
-      titleLines = wrapText(ctx, mainText, maxWidth);
-      const lh = titleSize * 1.15;
-      const asize = Math.max(14 * scale, Math.round(titleSize * 0.4));
-      const ablock = subText ? asize * 1.3 + 12 * scale : 0;
-      if (titleLines.length <= 3 && titleLines.length * lh + ablock <= maxBlockHeight) break;
-      titleSize -= 2 * scale;
+  let fontSize, lines;
+  if (layer.autoSize) {
+    fontSize = 52 * scale;
+    const maxBlockHeight = SIZE * 0.55;
+    while (fontSize >= 14 * scale) {
+      ctx.font = fontFor(fontSize);
+      lines = wrapText(ctx, displayText, maxWidth);
+      const lh = fontSize * 1.15;
+      if (lines.length <= 3 && lines.length * lh <= maxBlockHeight) break;
+      fontSize -= 2 * scale;
     }
   } else {
-    titleSize = style.fontSize * scale;
-    ctx.font = fontFor(titleSize);
-    titleLines = wrapText(ctx, mainText, maxWidth);
+    fontSize = layer.fontSize * scale;
+    ctx.font = fontFor(fontSize);
+    lines = wrapText(ctx, displayText, maxWidth);
   }
 
-  const titleLineHeight = titleSize * 1.15;
-  const artistSize = Math.max(14 * scale, Math.round(titleSize * 0.4));
-  const artistLineHeight = subText ? artistSize * 1.3 : 0;
-  const gap = subText ? 12 * scale : 0;
-  const blockHeight = titleLines.length * titleLineHeight + (subText ? gap + artistLineHeight : 0);
-
-  const centerX = SIZE * (style.posX ?? 50) / 100;
-  const centerY = SIZE * (style.posY ?? 50) / 100;
+  const lineHeight = fontSize * 1.15;
+  const blockHeight = lines.length * lineHeight;
+  const centerX = SIZE * (layer.posX ?? 50) / 100;
+  const centerY = SIZE * (layer.posY ?? 50) / 100;
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
 
   let cursorTop = centerY - blockHeight / 2;
-
-  ctx.font = fontFor(titleSize);
-  ctx.lineWidth = Math.max(2 * scale, titleSize * (style.strokeWidth ?? 0));
-  ctx.strokeStyle = style.strokeColor || '#ffffff';
-  ctx.fillStyle = style.fillColor || '#000000';
-  for (const line of titleLines) {
-    const baselineY = cursorTop + titleLineHeight / 2;
+  ctx.font = fontFor(fontSize);
+  ctx.lineWidth = Math.max(2 * scale, fontSize * (layer.strokeWidth ?? 0));
+  ctx.strokeStyle = layer.strokeColor || '#ffffff';
+  ctx.fillStyle = layer.fillColor || '#000000';
+  for (const line of lines) {
+    const baselineY = cursorTop + lineHeight / 2;
     if (ctx.lineWidth > 0.5) ctx.strokeText(line, centerX, baselineY);
     ctx.fillText(line, centerX, baselineY);
-    cursorTop += titleLineHeight;
-  }
-
-  if (subText) {
-    cursorTop += gap;
-    const baselineY = cursorTop + artistLineHeight / 2;
-    ctx.font = fontFor(artistSize);
-    ctx.lineWidth = Math.max(1.5 * scale, artistSize * (style.strokeWidth ?? 0) * 0.9);
-    if (ctx.lineWidth > 0.5) ctx.strokeText(subText, centerX, baselineY);
-    ctx.fillText(subText, centerX, baselineY);
+    cursorTop += lineHeight;
   }
 }
 
+/* Draws every extra shape/image layer on top of the text. */
+async function drawExtrasAsync(ctx, SIZE) {
+  for (const extra of cardStyle.extras) {
+    ctx.save();
+    ctx.globalAlpha = extra.opacity ?? 1;
+    const cx = SIZE * (extra.posX ?? 50) / 100;
+    const cy = SIZE * (extra.posY ?? 50) / 100;
+    const w = SIZE * (extra.width ?? 20) / 100;
+    if (extra.type === 'rect') {
+      ctx.fillStyle = extra.color || '#ffffff';
+      ctx.fillRect(cx - w / 2, cy - w / 2, w, w);
+    } else if (extra.type === 'circle') {
+      ctx.fillStyle = extra.color || '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, w / 2, w / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (extra.type === 'image' && extra.dataUrl) {
+      try {
+        const img = extraImageCache[extra.id] || await loadImage(extra.dataUrl);
+        extraImageCache[extra.id] = img;
+        const h = w * (img.height / img.width);
+        ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+      } catch { /* skip a broken image layer */ }
+    }
+    ctx.restore();
+  }
+}
+
+/* Draws title + artist (if it's a song) + every extra layer, on top of
+   whatever background is already on the canvas. */
+async function drawCardOverlay(ctx, SIZE, item) {
+  const effectiveType = getItemType(item);
+  const titleText = getItemEditableTitle(item) || item.title || '';
+  drawTextLayer(ctx, SIZE, titleText, cardStyle.title);
+  if (effectiveType === 'song') {
+    const artistText = getItemEditableArtist(item);
+    if (artistText) drawTextLayer(ctx, SIZE, artistText, cardStyle.artist);
+  }
+  await drawExtrasAsync(ctx, SIZE);
+}
+
 /* ─── Canvas: render final tierlist card ─────────────────────
-   Full 1:1 square — the thumbnail fills the entire card, and the
-   styled title/artist text is drawn on top using the shared
-   drawTierlistText() so downloads always match the style preview. */
+   Full 1:1 square — the image fills the entire card, and the styled
+   title/artist/extra layers are drawn on top using the same
+   drawCardOverlay() the live preview uses, so downloads always match
+   what you see in the style editor. */
 async function renderTierlistBlob(item, quality) {
   const { vid } = item;
   const usingCustom = !!item.customImage;
@@ -1122,14 +1236,14 @@ async function renderTierlistBlob(item, quality) {
   return new Promise(resolve => {
     const img = new Image();
     if (!usingCustom) img.crossOrigin = 'anonymous';
-    img.onload = () => {
+    img.onload = async () => {
       const SIZE = 500;
       const canvas = document.createElement('canvas');
       canvas.width = SIZE;
       canvas.height = SIZE;
       const ctx = canvas.getContext('2d');
       drawCoverImage(ctx, img, SIZE);
-      drawTierlistText(ctx, SIZE, item, textStyle);
+      await drawCardOverlay(ctx, SIZE, item);
       canvas.toBlob(resolve, 'image/png');
     };
     img.onerror = () => {
@@ -1148,7 +1262,7 @@ async function downloadZip() {
   if (!batchItems.length) return;
   const tierlist = isTlPlaylist();
   const zip      = new JSZip();
-  const folder   = zip.folder('thumbnails');
+  const folder   = zip.folder('images');
   let done = 0;
   const bar   = document.getElementById('prog-bar');
   const label = document.getElementById('prog-label');
@@ -1175,11 +1289,14 @@ async function downloadZip() {
   }
 
   const zipBlob = await zip.generateAsync({ type: 'blob' });
-  triggerDownload(URL.createObjectURL(zipBlob), 'thumbnails.zip');
+  triggerDownload(URL.createObjectURL(zipBlob), 'tierlist-batch.zip');
   label.textContent = 'Done!';
 }
 
-/* ─── Text style editor (modal + live draggable preview) ───── */
+/* ─── Card style editor (modal + live draggable preview) ────
+   The Title and Creator text are independent layers, and you can add
+   any number of extra shape or image layers on top — everything is
+   selectable via the tabs and draggable on the preview canvas. */
 const SAMPLE_PREVIEW_ITEM = {
   vid: 'sample',
   title: 'Sample Song Title',
@@ -1189,7 +1306,13 @@ const SAMPLE_PREVIEW_ITEM = {
 let styleModalContext = 'single';
 let previewImg = null;
 let previewDragWired = false;
+let extraImageTarget = null; // null = creating a new image layer; an id = replacing that layer's image
 
+function getSelectedLayerObj() {
+  if (selectedLayer === 'title') return cardStyle.title;
+  if (selectedLayer === 'artist') return cardStyle.artist;
+  return cardStyle.extras.find(x => x.id === selectedLayer) || cardStyle.title;
+}
 function getPreviewItem() {
   if (styleModalContext === 'single' && singleMeta) return singleMeta;
   if (styleModalContext === 'batch' && batchItems.length) return batchItems[0];
@@ -1205,7 +1328,8 @@ function previewImageSrc(item) {
 function openStyleModal(context) {
   styleModalContext = context;
   document.getElementById('style-modal').classList.add('open');
-  syncStyleControls();
+  renderLayerTabs();
+  renderLayerControls();
   loadPreviewImage();
   if (!previewDragWired) {
     wirePreviewDrag(document.getElementById('style-preview-canvas'));
@@ -1214,39 +1338,6 @@ function openStyleModal(context) {
 }
 function closeStyleModal() {
   document.getElementById('style-modal').classList.remove('open');
-}
-
-function syncStyleControls() {
-  document.getElementById('style-font').value = textStyle.fontFamily;
-  document.getElementById('style-bold').checked = textStyle.bold;
-  document.getElementById('style-italic').checked = textStyle.italic;
-  document.getElementById('style-uppercase').checked = textStyle.uppercase;
-  document.getElementById('style-autosize').checked = textStyle.autoSize;
-  document.getElementById('style-size').disabled = textStyle.autoSize;
-  document.getElementById('style-size').value = textStyle.fontSize;
-  document.getElementById('style-fill').value = textStyle.fillColor;
-  document.getElementById('style-stroke').value = textStyle.strokeColor;
-  document.getElementById('style-strokewidth').value = textStyle.strokeWidth;
-}
-
-function updateStyle() {
-  textStyle.fontFamily = document.getElementById('style-font').value;
-  textStyle.bold = document.getElementById('style-bold').checked;
-  textStyle.italic = document.getElementById('style-italic').checked;
-  textStyle.uppercase = document.getElementById('style-uppercase').checked;
-  textStyle.autoSize = document.getElementById('style-autosize').checked;
-  document.getElementById('style-size').disabled = textStyle.autoSize;
-  textStyle.fontSize = parseInt(document.getElementById('style-size').value, 10) || 52;
-  textStyle.fillColor = document.getElementById('style-fill').value;
-  textStyle.strokeColor = document.getElementById('style-stroke').value;
-  textStyle.strokeWidth = parseFloat(document.getElementById('style-strokewidth').value);
-  redrawPreview();
-}
-
-function resetStylePosition() {
-  textStyle.posX = 50;
-  textStyle.posY = 50;
-  redrawPreview();
 }
 
 function loadPreviewImage() {
@@ -1262,7 +1353,7 @@ function loadPreviewImage() {
   img.src = src;
 }
 
-function redrawPreview() {
+async function redrawPreview() {
   const canvas = document.getElementById('style-preview-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -1277,7 +1368,7 @@ function redrawPreview() {
     ctx.fillRect(0, 0, SIZE, SIZE);
   }
   const item = getPreviewItem() || SAMPLE_PREVIEW_ITEM;
-  drawTierlistText(ctx, SIZE, item, textStyle);
+  await drawCardOverlay(ctx, SIZE, item);
 }
 
 function wirePreviewDrag(canvas) {
@@ -1287,8 +1378,9 @@ function wirePreviewDrag(canvas) {
     const rect = canvas.getBoundingClientRect();
     let x = (e.clientX - rect.left) / rect.width * 100;
     let y = (e.clientY - rect.top) / rect.height * 100;
-    textStyle.posX = Math.min(100, Math.max(0, x));
-    textStyle.posY = Math.min(100, Math.max(0, y));
+    const obj = getSelectedLayerObj();
+    obj.posX = Math.min(100, Math.max(0, x));
+    obj.posY = Math.min(100, Math.max(0, y));
     redrawPreview();
   };
   canvas.addEventListener('pointerdown', e => {
@@ -1297,12 +1389,196 @@ function wirePreviewDrag(canvas) {
     updateFromEvent(e);
   });
   canvas.addEventListener('pointermove', e => { if (dragging) updateFromEvent(e); });
-  canvas.addEventListener('pointerup', () => { dragging = false; });
+  canvas.addEventListener('pointerup', () => { dragging = false; saveCardStyle(); });
   canvas.addEventListener('pointercancel', () => { dragging = false; });
 }
 
+function renderLayerTabs() {
+  const wrap = document.getElementById('layer-tabs');
+  let html = `
+    <button class="layer-tab${selectedLayer === 'title' ? ' active' : ''}" onclick="selectLayer('title')">Title</button>
+    <button class="layer-tab${selectedLayer === 'artist' ? ' active' : ''}" onclick="selectLayer('artist')">Creator</button>`;
+  cardStyle.extras.forEach((ex, i) => {
+    html += `<button class="layer-tab${selectedLayer === ex.id ? ' active' : ''}" onclick="selectLayer('${ex.id}')">${ex.type === 'image' ? '🖼' : '▢'} ${i + 1}<span class="layer-tab-x" onclick="event.stopPropagation(); removeExtraLayer('${ex.id}')">×</span></button>`;
+  });
+  html += `
+    <button class="layer-tab add-layer" onclick="addExtraLayer('rect')">+ Shape</button>
+    <button class="layer-tab add-layer" onclick="addExtraImageLayer()">+ Image</button>`;
+  wrap.innerHTML = html;
+}
+
+function selectLayer(id) {
+  selectedLayer = id;
+  renderLayerTabs();
+  renderLayerControls();
+}
+
+function renderLayerControls() {
+  const container = document.getElementById('layer-controls');
+  if (selectedLayer === 'title' || selectedLayer === 'artist') {
+    container.innerHTML = textLayerControlsHtml(getSelectedLayerObj());
+  } else {
+    container.innerHTML = extraLayerControlsHtml(getSelectedLayerObj());
+  }
+}
+
+function textLayerControlsHtml(layer) {
+  return `
+    <label class="field">Font
+      <select onchange="updateTextLayerField('fontFamily', this.value)">
+        ${FONT_OPTIONS.map(f => `<option value='${f.value}' ${layer.fontFamily === f.value ? 'selected' : ''}>${f.label}</option>`).join('')}
+      </select>
+    </label>
+    <div class="style-row">
+      <label class="style-checkline"><input type="checkbox" ${layer.bold ? 'checked' : ''} onchange="updateTextLayerField('bold', this.checked)"> Bold</label>
+      <label class="style-checkline"><input type="checkbox" ${layer.italic ? 'checked' : ''} onchange="updateTextLayerField('italic', this.checked)"> Italic</label>
+      <label class="style-checkline"><input type="checkbox" ${layer.uppercase ? 'checked' : ''} onchange="updateTextLayerField('uppercase', this.checked)"> UPPERCASE</label>
+    </div>
+    <label class="field">
+      <span class="style-checkline"><input type="checkbox" ${layer.autoSize ? 'checked' : ''} onchange="updateTextLayerField('autoSize', this.checked); renderLayerControls();"> Auto-fit size</span>
+      <input type="range" min="12" max="120" value="${layer.fontSize}" ${layer.autoSize ? 'disabled' : ''} oninput="updateTextLayerField('fontSize', parseInt(this.value,10))" />
+    </label>
+    <div class="style-color-row">
+      <label class="field">Text color <input type="color" value="${layer.fillColor}" onchange="updateTextLayerField('fillColor', this.value)"></label>
+      <label class="field">Stroke color <input type="color" value="${layer.strokeColor}" onchange="updateTextLayerField('strokeColor', this.value)"></label>
+    </div>
+    <label class="field">Stroke width
+      <input type="range" min="0" max="0.3" step="0.01" value="${layer.strokeWidth}" oninput="updateTextLayerField('strokeWidth', parseFloat(this.value))" />
+    </label>
+    <button class="secondary sm-btn" onclick="centerSelectedLayer()">Center this text</button>`;
+}
+
+function extraLayerControlsHtml(extra) {
+  const isImage = extra.type === 'image';
+  return `
+    ${!isImage ? `<label class="field">Shape
+      <select onchange="updateExtraField('type', this.value)">
+        <option value="rect" ${extra.type === 'rect' ? 'selected' : ''}>Rectangle</option>
+        <option value="circle" ${extra.type === 'circle' ? 'selected' : ''}>Circle</option>
+      </select>
+    </label>
+    <label class="field">Color <input type="color" value="${extra.color || '#ffffff'}" onchange="updateExtraField('color', this.value)"></label>`
+    : `<button class="secondary sm-btn" onclick="triggerReplaceExtraImage('${extra.id}')">Replace image</button>`}
+    <label class="field">Opacity
+      <input type="range" min="0.05" max="1" step="0.05" value="${extra.opacity ?? 1}" oninput="updateExtraField('opacity', parseFloat(this.value))" />
+    </label>
+    <label class="field">Size
+      <input type="range" min="4" max="80" value="${extra.width ?? 20}" oninput="updateExtraField('width', parseInt(this.value,10))" />
+    </label>
+    <button class="secondary sm-btn" onclick="centerSelectedLayer()">Center this layer</button>
+    <button class="secondary sm-btn" onclick="removeExtraLayer('${extra.id}')">Remove layer</button>`;
+}
+
+function updateTextLayerField(field, value) {
+  getSelectedLayerObj()[field] = value;
+  saveCardStyle();
+  redrawPreview();
+}
+function updateExtraField(field, value) {
+  const extra = getSelectedLayerObj();
+  extra[field] = value;
+  saveCardStyle();
+  redrawPreview();
+}
+function centerSelectedLayer() {
+  const obj = getSelectedLayerObj();
+  obj.posX = 50; obj.posY = 50;
+  saveCardStyle();
+  redrawPreview();
+}
+
+function addExtraLayer(type) {
+  const id = genId();
+  cardStyle.extras.push({ id, type, color: '#ffffff', opacity: 1, width: 20, posX: 50, posY: 20 });
+  selectedLayer = id;
+  saveCardStyle();
+  renderLayerTabs();
+  renderLayerControls();
+  redrawPreview();
+}
+function addExtraImageLayer() {
+  extraImageTarget = null;
+  document.getElementById('extra-img-input').click();
+}
+function triggerReplaceExtraImage(id) {
+  extraImageTarget = id;
+  document.getElementById('extra-img-input').click();
+}
+async function onExtraImageChosen(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const dataUrl = await readFileAsDataUrl(file);
+  if (extraImageTarget) {
+    const extra = cardStyle.extras.find(x => x.id === extraImageTarget);
+    if (extra) { extra.dataUrl = dataUrl; delete extraImageCache[extra.id]; }
+  } else {
+    const id = genId();
+    cardStyle.extras.push({ id, type: 'image', dataUrl, opacity: 1, width: 20, posX: 50, posY: 20 });
+    selectedLayer = id;
+  }
+  saveCardStyle();
+  renderLayerTabs();
+  renderLayerControls();
+  redrawPreview();
+}
+function removeExtraLayer(id) {
+  cardStyle.extras = cardStyle.extras.filter(x => x.id !== id);
+  delete extraImageCache[id];
+  if (selectedLayer === id) selectedLayer = 'title';
+  saveCardStyle();
+  renderLayerTabs();
+  renderLayerControls();
+  redrawPreview();
+}
+
+/* ─── Style export / import (backup in case localStorage clears) ── */
+function exportCardStyle() {
+  const data = JSON.stringify(cardStyle, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  triggerDownload(URL.createObjectURL(blob), 'tierlist-card-style.json');
+}
+function triggerImportCardStyle() {
+  document.getElementById('style-import-input').click();
+}
+async function onImportCardStyle(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    cardStyle = normalizeCardStyle(parsed);
+    extraImageCache = {};
+    selectedLayer = 'title';
+    saveCardStyle();
+    renderLayerTabs();
+    renderLayerControls();
+    redrawPreview();
+  } catch {
+    alert("That file doesn't look like a valid style export.");
+  }
+}
+function resetCardStyle() {
+  cardStyle = defaultCardStyle();
+  extraImageCache = {};
+  selectedLayer = 'title';
+  saveCardStyle();
+  renderLayerTabs();
+  renderLayerControls();
+  redrawPreview();
+}
+
 /* ─── Init ────────────────────────────────────────────────── */
+loadUiPrefs();
 renderApiKeyStatus();
+updateBatchTabBadge();
+document.getElementById('style-modal').addEventListener('click', e => {
+  if (e.target.id === 'style-modal') closeStyleModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('style-modal').classList.contains('open')) closeStyleModal();
+});
 </script>
 </body>
 </html>
